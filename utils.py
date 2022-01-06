@@ -64,6 +64,19 @@ def derive_homog():
     return ca.Function('homog', [p, R], [homog_sym])
 
 
+# derives a symbolic function that reverses the direction of the coordinate
+# transformation defined by a 4x4 homogeneous transformation matrix
+def derive_reverse_homog():
+    T = ca.SX.sym('T', 4, 4)
+    R = T[:3, :3]
+    p = T[:3, 3]
+    reverse_homog_sym = ca.SX(4, 4)
+    reverse_homog_sym[:3, :3] = R.T
+    reverse_homog_sym[:3, 3] = -R.T @ p
+    reverse_homog_sym[3, 3] = 1.0
+    return ca.Function('reverse_homog', [T], [reverse_homog_sym])
+
+
 # multiplication between a 4x4 homogenous transformation matrix and 3x1
 # position vector, returns 3x1 position
 def mult_homog_point(T, p):
@@ -122,6 +135,13 @@ if __name__ == "__main__":
     mult_homog_point_func = derive_mult_homog_point()
     print(mult_homog_point(homog(x_axis, R), y_axis))
     print(mult_homog_point_func(homog(x_axis, R), y_axis))
+
+    reverse_homog_func = derive_reverse_homog()
+    T = ca.SX.sym('T', 4, 4)
+    print(reverse_homog_func(T))
+    T = homog(p, R)
+    print(T @ reverse_homog_func(T))
+    print(reverse_homog_func(T) @ T)
 
     import ipdb
     ipdb.set_trace()
