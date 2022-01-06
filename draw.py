@@ -6,16 +6,11 @@ from mpl_toolkits.mplot3d import Axes3D
 plt.style.use("seaborn")
 
 
-def draw(p, R, c, f, f_len=0.5):
+def draw(p, R, p_i, f_i, f_len=0.5):
     T_B = homog(p, R)
     p_Bi = {}
-    r_i = {}
-    p_i = {}
     for leg in legs:
         p_Bi[leg] = mult_homog_point(T_B, B_p_Bi[leg])
-        Bi_p_i = np.array([c[leg][0], 0, c[leg][1]])
-        r_i[leg] = B_p_Bi[leg] + Bi_p_i
-        p_i[leg] = mult_homog_point(T_B, r_i[leg])
 
     anim_fig = plt.figure(figsize=(6, 6))
     ax = Axes3D(anim_fig, auto_add_to_figure=False)
@@ -50,7 +45,7 @@ def draw(p, R, c, f, f_len=0.5):
 
     f_coords = {}
     for leg in legs:
-        f_vec = p_i[leg] + f_len * f[leg]
+        f_vec = p_i[leg] + f_len * f_i[leg]
         f_coords[leg] = np.vstack((p_i[leg], f_vec)).T
         lines[2+leg.value].set_data(f_coords[leg][0], f_coords[leg][1])
         lines[2+leg.value].set_3d_properties(f_coords[leg][2])
@@ -61,11 +56,11 @@ if __name__ == "__main__":
     from common import rotMat
     p = np.array([0.0, 0.0, 0.3])
     R = rotMat(np.array([0, 1, 0]), 0.1)
-    c = {}
-    f = {}
+    p_i = {}
+    f_i = {}
     for leg in legs:
-        c[leg] = np.array([0.0, -0.2])
-        f[leg] = np.array([0.0, 0.0, 0.2])
+        p_i[leg] = B_p_Bi[leg]
+        f_i[leg] = np.array([0.0, 0.0, 0.2])
 
-    draw(p=p, R=R, c=c, f=f)
+    draw(p=p, R=R, p_i=p_i, f_i=f_i)
     plt.show()
