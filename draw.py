@@ -7,6 +7,21 @@ from mpl_toolkits.mplot3d import Axes3D
 plt.style.use("seaborn")
 
 
+# draws a coordinate system defined by the 4x4 homogeneous transformation matrix T
+def draw_T(T):
+    axis_len = 0.1
+    origin = T[:3, 3]
+    axis_colors = ["r", "g", "b"]
+    for axis in range(3):
+        axis_head = origin + axis_len * T[:3, axis]
+        axis_coords = np.vstack((origin, axis_head)).T
+
+        line = plt.plot([], [])[0]
+        line.set_data(axis_coords[0], axis_coords[1])
+        line.set_3d_properties(axis_coords[2])
+        line.set_color(axis_colors[axis])
+
+
 def draw(p, R, p_i, f_i, f_len=0.5):
     T_B = homog(p, R)
     p_Bi = {}
@@ -52,6 +67,12 @@ def draw(p, R, p_i, f_i, f_len=0.5):
         line.set_data(f_coords[leg][0], f_coords[leg][1])
         line.set_3d_properties(f_coords[leg][2])
         line.set_color("r")
+
+    draw_T(np.eye(4))
+    draw_T(T_B)
+    for leg in legs:
+        T_Bi = T_B @ B_T_Bi[leg]
+        draw_T(T_Bi)
 
 
 if __name__ == "__main__":
