@@ -1,4 +1,4 @@
-from common import legs
+from constants import *
 import numpy as np
 import casadi as ca
 

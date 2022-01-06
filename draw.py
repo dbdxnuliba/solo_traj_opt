@@ -1,4 +1,5 @@
-from common import homog, mult_homog_point, legs, B_p_Bi
+from constants import *
+from utils import homog, mult_homog_point
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -53,7 +54,7 @@ def draw(p, R, p_i, f_i, f_len=0.5):
 
 
 if __name__ == "__main__":
-    from common import rotMat
+    from utils import rotMat
     p = np.array([0.0, 0.0, 0.3])
     R = rotMat(np.array([0, 1, 0]), 0.1)
     p_i = {}
