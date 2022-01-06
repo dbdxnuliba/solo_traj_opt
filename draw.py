@@ -27,30 +27,31 @@ def draw(p, R, p_i, f_i, f_len=0.5):
     if ax.collections:
         ax.collections.pop()
 
-    lines = [plt.plot([], [])[0] for _ in range(6)]
-
     body_coords = np.vstack(
         (p_Bi[legs.FL], p_Bi[legs.FR], p_Bi[legs.HR], p_Bi[legs.HL], p_Bi[legs.FL])
     ).T
-    lines[0].set_data(body_coords[0], body_coords[1])
-    lines[0].set_3d_properties(body_coords[2])
-    lines[0].set_color("b")
-    lines[0].set_marker("o")
+    line = plt.plot([], [])[0]
+    line.set_data(body_coords[0], body_coords[1])
+    line.set_3d_properties(body_coords[2])
+    line.set_color("b")
+    line.set_marker("o")
 
     feet_coords = np.vstack((p_i[legs.FL], p_i[legs.FR], p_i[legs.HR], p_i[legs.HL])).T
-    lines[1].set_data(feet_coords[0], feet_coords[1])
-    lines[1].set_3d_properties(feet_coords[2])
-    lines[1].set_color("g")
-    lines[1].set_marker("o")
-    lines[1].set_linestyle("None")
+    line = plt.plot([], [])[0]
+    line.set_data(feet_coords[0], feet_coords[1])
+    line.set_3d_properties(feet_coords[2])
+    line.set_color("g")
+    line.set_marker("o")
+    line.set_linestyle("None")
 
     f_coords = {}
     for leg in legs:
         f_vec = p_i[leg] + f_len * f_i[leg]
         f_coords[leg] = np.vstack((p_i[leg], f_vec)).T
-        lines[2 + leg.value].set_data(f_coords[leg][0], f_coords[leg][1])
-        lines[2 + leg.value].set_3d_properties(f_coords[leg][2])
-        lines[2 + leg.value].set_color("r")
+        line = plt.plot([], [])[0]
+        line.set_data(f_coords[leg][0], f_coords[leg][1])
+        line.set_3d_properties(f_coords[leg][2])
+        line.set_color("r")
 
 
 if __name__ == "__main__":
