@@ -71,6 +71,16 @@ def mult_homog_point(T, p):
     return (T @ p_aug)[:3]
 
 
+# derives a symbolic version of the mult_homog_point function
+def derive_mult_homog_point():
+    T = ca.SX.sym('T', 4, 4)
+    p = ca.SX.sym('p', 3)
+    p_aug = ca.SX.ones(4, 1)
+    p_aug[:3] = p
+    mult_homog_point_sym = (T @ p_aug)[:3]
+    return ca.Function('mult_homog_point', [T, p], [mult_homog_point_sym])
+
+
 # test functions
 if __name__ == "__main__":
     x_axis = np.eye(3)[:, 0]
@@ -109,7 +119,9 @@ if __name__ == "__main__":
     print(homog_func(p, R))
 
     print("\ntest mult_homog_point")
+    mult_homog_point_func = derive_mult_homog_point()
     print(mult_homog_point(homog(x_axis, R), y_axis))
+    print(mult_homog_point_func(homog(x_axis, R), y_axis))
 
     import ipdb
     ipdb.set_trace()
