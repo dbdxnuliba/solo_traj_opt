@@ -1,11 +1,17 @@
 from constants import *
-from utils import derive_skew, derive_rotMat, derive_homog, derive_reverse_homog, derive_mult_homog_point
+from utils import (
+    derive_skew,
+    derive_rotMat,
+    derive_homog,
+    derive_reverse_homog,
+    derive_mult_homog_point,
+)
 import numpy as np
 import casadi as ca
 
 tf = 5
-N = int(tf*4)
-dt = tf/(N)
+N = int(tf * 4)
+dt = tf / (N)
 epsilon = 1e-6
 
 skew_func = derive_skew()
@@ -24,8 +30,8 @@ def extract_state(X, U, k):
     p_i = {}
     f_i = {}
     for leg in legs:
-        p_i[leg] = U[3*leg.value: leg.value*3+3, k]
-        f_i[leg] = U[12+3*leg.value: 12+leg.value*3+3, k]
+        p_i[leg] = U[3 * leg.value : leg.value * 3 + 3, k]
+        f_i[leg] = U[12 + 3 * leg.value : 12 + leg.value * 3 + 3, k]
     return p, R, pdot, omega, p_i, f_i
 
 
@@ -35,20 +41,28 @@ if __name__ == "__main__":
     # U = opti.variable(24, N+1)
 
     # temporarily use SX for debugging
-    X = ca.SX.sym('X', 18, N+1)
-    U = ca.SX.sym('U', 24, N+1)
+    X = ca.SX.sym("X", 18, N + 1)
+    U = ca.SX.sym("U", 24, N + 1)
 
     # objective function
     # TODO
 
-    for k in range(N+1):
+    for k in range(N + 1):
         # extract state
         p, R, pdot, omega, p_i, f_i = extract_state(X, U, k)
         if k != N:
             p_next, R_next, pdot_next, omega_next, p_i_next, f_i_next = extract_state(
-                X, U, k+1)
+                X, U, k + 1
+            )
         else:
-            p_next, R_next, pdot_next, omega_next, p_i_next, f_i_next = None, None, None, None, None, None
+            p_next, R_next, pdot_next, omega_next, p_i_next, f_i_next = (
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+            )
 
         # dynamics constraints
         # f = ca.MX(3, 1)
@@ -61,10 +75,11 @@ if __name__ == "__main__":
             tau += ca.cross(p_i[leg], f_i[leg])
 
         p_next_eqn = p + pdot * dt
-        pdot_next_dqn = pdot + (f/m - g) * dt
+        pdot_next_dqn = pdot + (f / m - g) * dt
         R_next_eqn = R @ rotMat_func(omega, dt)
-        omega_next_eqn = omega + \
-            B_I_inv @ (R.T @ tau - skew_func(omega) @ B_I @ omega) * dt
+        omega_next_eqn = (
+            omega + B_I_inv @ (R.T @ tau - skew_func(omega) @ B_I @ omega) * dt
+        )
 
         # kinematics constraints
         T_B = homog_func(p, R)
