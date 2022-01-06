@@ -1,3 +1,4 @@
+from utils import homog
 import numpy as np
 import enum
 
@@ -31,3 +32,6 @@ B_p_Bi[legs.FL] = np.array([l_Bx / 2.0, l_By / 2.0, 0.0])
 B_p_Bi[legs.FR] = np.array([l_Bx / 2.0, -l_By / 2.0, 0.0])
 B_p_Bi[legs.HL] = np.array([-l_Bx / 2.0, l_By / 2.0, 0.0])
 B_p_Bi[legs.HR] = np.array([-l_Bx / 2.0, -l_By / 2.0, 0.0])
+B_T_Bi = {}
+for leg in legs:
+    B_T_Bi[leg] = homog(B_p_Bi[leg], np.eye(3))

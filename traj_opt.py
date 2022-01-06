@@ -1,5 +1,5 @@
 from constants import *
-from utils import derive_skew, derive_rotMat
+from utils import derive_skew, derive_rotMat, derive_homog, derive_reverse_homog, derive_mult_homog_point
 import numpy as np
 import casadi as ca
 
@@ -8,8 +8,11 @@ N = int(tf*4)
 dt = tf/(N)
 epsilon = 1e-6
 
-skew = derive_skew()
-rotMat = derive_rotMat()
+skew_func = derive_skew()
+rotMat_func = derive_rotMat()
+homog_func = derive_homog()
+reverse_homog_func = derive_reverse_homog()
+mult_homog_point_func = derive_mult_homog_point()
 
 
 def extract_state(X, U, k):
@@ -59,12 +62,16 @@ if __name__ == "__main__":
 
         p_next_eqn = p + pdot * dt
         pdot_next_dqn = pdot + (f/m - g) * dt
-        R_next_eqn = R @ rotMat(omega, dt)
+        R_next_eqn = R @ rotMat_func(omega, dt)
         omega_next_eqn = omega + \
-            B_I_inv @ (R.T @ tau - skew(omega) @ B_I @ omega) * dt
+            B_I_inv @ (R.T @ tau - skew_func(omega) @ B_I @ omega) * dt
 
         # kinematics constraints
-        # TODO
+        T_B = homog_func(p, R)
+        for leg in legs:
+            T_Bi = T_B @ B_T_Bi[leg]
+            Bi_T = reverse_homog_func(T_Bi)
+            Bi_p_i = mult_homog_point_func(Bi_T, p_i[leg])
 
         # friction cone constraints
         # TODO
@@ -74,7 +81,7 @@ if __name__ == "__main__":
 
         # import ipdb
         # ipdb.set_trace()
-    
+
     # initial and final conditions constraint
     # TODO
 
