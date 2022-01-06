@@ -35,6 +35,7 @@ def rotMat(s, th):
     return np.eye(3) + np.sin(th) * skew_s + (1.0 - np.cos(th)) * skew_s @ skew_s
 
 
+# derives a symbolic version of the rotMat function
 def derive_rotMat():
     s = ca.SX.sym('s', 3)
     th = ca.SX.sym('th')
@@ -50,6 +51,17 @@ def derive_rotMat():
 # transformation matrix
 def homog(p, R):
     return np.block([[R, p[:, np.newaxis]], [np.zeros((1, 3)), 1]])
+
+
+# derives a symbolic version of the homog function
+def derive_homog():
+    p = ca.SX.sym('p', 3)
+    R = ca.SX.sym('R', 3, 3)
+    homog_sym = ca.SX(4, 4)
+    homog_sym[:3, :3] = R
+    homog_sym[:3, 3] = p
+    homog_sym[3, 3] = 1.0
+    return ca.Function('homog', [p, R], [homog_sym])
 
 
 # multiplication between a 4x4 homogenous transformation matrix and 3x1
@@ -90,9 +102,11 @@ if __name__ == "__main__":
           rotMat_func(x_axis, np.pi/4).T - np.eye(3)))
 
     print("\ntest homog")
+    homog_func = derive_homog()
     p = np.array([1, 2, 3])
     R = rotMat(x_axis, np.pi/4)
     print(homog(p, R))
+    print(homog_func(p, R))
 
     print("\ntest mult_homog_point")
     print(mult_homog_point(homog(x_axis, R), y_axis))
