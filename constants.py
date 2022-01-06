@@ -13,6 +13,8 @@ l_calf = 0.160  # length of lower leg measured axis to axis (from CAD)
 m = 1.43315091  # mass of body  (from URDF)
 # body moment of inertia in body frame (from URDF)
 B_I = np.diag([0.00578574, 0.01938108, 0.02476124])
+B_I_inv = np.diag(1 / np.array([0.00578574, 0.01938108, 0.02476124]))
+g = np.array([0.0, 0.0, -9.81])
 
 
 # enum for the four legs
