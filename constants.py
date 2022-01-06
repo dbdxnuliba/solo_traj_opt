@@ -2,7 +2,7 @@ from utils import homog
 import numpy as np
 import enum
 
-
+# robot physical length paramters
 l_Bx = 0.380  # length of body, measured axis to axis at hip (from CAD)
 # width between left and right feet (from CAD)
 # outer face to face was 310mm, inner face to face was 290mm, thickness of lower leg is 10mm
@@ -10,12 +10,16 @@ l_By = 0.3
 l_thigh = 0.165  # length of upper leg module measured axis to axis (from CAD)
 l_calf = 0.160  # length of lower leg measured axis to axis (from CAD)
 
+# robot inertial paramters
 # TODO: check if mass of motors is included and below inertial properties
 m = 1.43315091  # mass of body  (from URDF)
 # body moment of inertia in body frame (from URDF)
 B_I = np.diag([0.00578574, 0.01938108, 0.02476124])
 B_I_inv = np.diag(1 / np.array([0.00578574, 0.01938108, 0.02476124]))
-g = np.array([0.0, 0.0, -9.81])
+
+# physical parameters external to robot
+g = np.array([0.0, 0.0, -9.81])  # gravity vector
+mu = 0.7  # friction coefficient
 
 
 # enum for the four legs

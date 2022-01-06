@@ -12,7 +12,13 @@ import casadi as ca
 tf = 5
 N = int(tf * 4)
 dt = tf / (N)
-epsilon = 1e-6
+eps = 1e-6
+
+# kinematics constraints paramters
+x_kin_lb = -l_Bx / 2.0
+x_kin_ub = l_thigh
+z_kin_lb = -l_thigh
+z_kin_ub = l_thigh
 
 skew_func = derive_skew()
 rotMat_func = derive_rotMat()
@@ -36,13 +42,9 @@ def extract_state(X, U, k):
 
 
 if __name__ == "__main__":
-    # opti = ca.Opti()
-    # X = opti.variable(18, N+1)
-    # U = opti.variable(24, N+1)
-
-    # temporarily use SX for debugging
-    X = ca.SX.sym("X", 18, N + 1)
-    U = ca.SX.sym("U", 24, N + 1)
+    opti = ca.Opti()
+    X = opti.variable(18, N + 1)
+    U = opti.variable(24, N + 1)
 
     # objective function
     # TODO
@@ -65,21 +67,19 @@ if __name__ == "__main__":
             )
 
         # dynamics constraints
-        # f = ca.MX(3, 1)
-        # tau = ca.MX(3, 1)
-        # temporarily use SX for debugging
-        f = ca.SX(3, 1)
-        tau = ca.SX(3, 1)
+        f = ca.MX(3, 1)
+        tau = ca.MX(3, 1)
         for leg in legs:
             f += f_i[leg]
             tau += ca.cross(p_i[leg], f_i[leg])
-
-        p_next_eqn = p + pdot * dt
-        pdot_next_dqn = pdot + (f / m - g) * dt
-        R_next_eqn = R @ rotMat_func(omega, dt)
-        omega_next_eqn = (
-            omega + B_I_inv @ (R.T @ tau - skew_func(omega) @ B_I @ omega) * dt
-        )
+        if k != N:
+            opti.subject_to(p_next == p + pdot * dt)
+            opti.subject_to(pdot_next == pdot + (f / m + g) * dt)
+            opti.subject_to(R_next == R @ rotMat_func(omega, dt))
+            opti.subject_to(
+                omega_next
+                == omega + B_I_inv @ (R.T @ tau - skew_func(omega) @ B_I @ omega) * dt
+            )
 
         # kinematics constraints
         T_B = homog_func(p, R)
@@ -87,6 +87,9 @@ if __name__ == "__main__":
             T_Bi = T_B @ B_T_Bi[leg]
             Bi_T = reverse_homog_func(T_Bi)
             Bi_p_i = mult_homog_point_func(Bi_T, p_i[leg])
+            opti.subject_to(opti.bounded(x_kin_lb, Bi_p_i[0], x_kin_ub))
+            opti.subject_to(opti.bounded(-eps, Bi_p_i[1], eps))
+            opti.subject_to(opti.bounded(z_kin_lb, Bi_p_i[2], z_kin_ub))
 
         # friction cone constraints
         # TODO
