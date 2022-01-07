@@ -103,6 +103,24 @@ def derive_mult_homog_point_ca():
     return ca.Function("mult_homog_point_ca", [T, p], [mult_homog_point_sym])
 
 
+# given numpy trajectory matrix, extract state at timestep k
+# note the order argument in reshape, which is necessary to make it consistent
+# with casadi's reshape
+def extract_state_np(X, U, k):
+    p = X[:3, k]
+    R_flat = X[3:12, k]
+    R = np.reshape(R_flat, (3, 3), order="F")
+    pdot = X[12:15, k]
+    omega = X[15:18, k]
+    p_i = {}
+    f_i = {}
+    for leg in legs:
+        p_i[leg] = U[3 * leg.value : leg.value * 3 + 3, k]
+        f_i[leg] = U[12 + 3 * leg.value : 12 + leg.value * 3 + 3, k]
+    return p, R, pdot, omega, p_i, f_i
+
+
+# given casadi trajectory matrix, extract state at timestep k
 def extract_state_ca(X, U, k):
     p = X[:3, k]
     R_flat = X[3:12, k]
@@ -117,16 +135,18 @@ def extract_state_ca(X, U, k):
     return p, R, pdot, omega, p_i, f_i
 
 
-def flatten_state_ca(p, R, pdot, omega, p_i, f_i):
-    R_flat = ca.reshape(R, 9, 1)
-    p_i_flat = ca.MX(12, 1)
-    f_i_flat = ca.MX(12, 1)
+# given a numpy state, flattens it into the same form as a column of a
+# trajectory matrix
+def flatten_state_np(p, R, pdot, omega, p_i, f_i):
+    R_flat = np.reshape(R, 9, order="F")
+    p_i_flat = np.zeros(12)
+    f_i_flat = np.zeros(12)
     for leg in legs:
         p_i_flat[3 * leg.value : leg.value * 3 + 3] = p_i[leg]
         f_i_flat[3 * leg.value : leg.value * 3 + 3] = f_i[leg]
 
-    X_k = ca.vertcat(p, R_flat, pdot, omega)
-    U_k = ca.vertcat(p_i_flat, f_i_flat)
+    X_k = np.hstack((p, R_flat, pdot, omega))
+    U_k = np.hstack((p_i_flat, f_i_flat))
 
     return X_k, U_k
 
@@ -189,7 +209,7 @@ if __name__ == "__main__":
     print(T @ reverse_homog_ca(T))
     print(reverse_homog_ca(T) @ T)
 
-    print("\ntest extract_state")
+    print("\ntest extract_state_ca")
     X = ca.SX.sym("X", 18, 3)
     U = ca.SX.sym("U", 24, 3)
     p, R, pdot, omega, p_i, f_i = extract_state_ca(X, U, 0)
@@ -200,6 +220,37 @@ if __name__ == "__main__":
     for leg in legs:
         print("p_i[", leg.value, "]:", p_i[leg])
         print("f_i[", leg.value, "]:", f_i[leg])
+
+    print("\ntest flatten_state_np")
+    p = np.array([1.0, 2.0, 3.0])
+    R = rot_mat_np(np.array([0, 1, 0]), np.pi / 4.0)
+    pdot = np.array([0.4, 0.5, 0.6])
+    omega = np.array([3, 4, 5])
+    p_i = {}
+    f_i = {}
+    for leg in legs:
+        p_i[leg] = leg.value + np.array([0.7, 0.8, 0.9])
+        f_i[leg] = leg.value + np.array([0.07, 0.08, 0.09])
+
+    X_k, U_k = flatten_state_np(p, R, pdot, omega, p_i, f_i)
+    print(X_k)
+    print(U_k)
+
+    print("\ntest extract_state_np")
+    (
+        p_extracted,
+        R_extracted,
+        pdot_extracted,
+        omega_extracted,
+        p_i_extracted,
+        f_i_extracted,
+    ) = extract_state_np(X_k[:, np.newaxis], U_k[:, np.newaxis], 0)
+    print("p_extracted", p_extracted)
+    print("R_extracted", R_extracted)
+    print("pdot_extracted", pdot_extracted)
+    print("omega_extracted", omega_extracted)
+    print("p_i_extracted", p_i_extracted)
+    print("f_i_extracted", f_i_extracted)
 
     import ipdb
 
