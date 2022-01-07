@@ -8,19 +8,10 @@ from utils import (
     derive_mult_homog_point_ca,
     extract_state_ca,
 )
+from draw import animate_traj
+from generate_reference import generate_reference
 import numpy as np
 import casadi as ca
-
-# temporary hard coded constant desired values
-tf = 5
-N = int(tf * 4)
-dt = tf / (N)
-
-p_des = np.array([0.0, 0.0, l_thigh / 2.0])
-p_i_des = {}
-for leg in legs:
-    p_i_des[leg] = B_p_Bi[leg]
-R_des = np.eye(3)
 
 if __name__ == "__main__":
     skew_ca = derive_skew_ca()
@@ -28,6 +19,11 @@ if __name__ == "__main__":
     homog_ca = derive_homog_ca()
     reverse_homog_ca = derive_reverse_homog_ca()
     mult_homog_point_ca = derive_mult_homog_point_ca()
+
+    X_ref, U_ref, dt = generate_reference()
+    animate_traj(X_ref, U_ref, dt)
+
+    N = N = X_ref.shape[1] - 1
 
     opti = ca.Opti()
     X = opti.variable(18, N + 1)
@@ -56,15 +52,20 @@ if __name__ == "__main__":
                 None,
             )
 
+        # extract reference
+        p_ref, R_ref, pdot_ref, omega_ref, p_i_ref, f_i_ref = extract_state_ca(
+            X_ref, U_ref, k
+        )
+
         # objective function
-        J += ca.dot(Q_p * (p - p_des), (p - p_des))
-        for leg in legs:
-            J += ca.dot(Q_p_i * (p_i[leg] - p_i_des[leg]), (p_i[leg] - p_i_des[leg]))
-        J += ca.trace(Gp - Gp @ R_des.T @ R)
-        J += ca.dot(R_pdot * pdot, pdot)
-        J += ca.dot(R_omega * omega, omega)
-        for leg in legs:
-            J += ca.dot(R_f_i * f_i[leg], f_i[leg])
+        J += ca.dot(Q_p * (p - p_ref), (p - p_ref))
+        # for leg in legs:
+        #     J += ca.dot(Q_p_i * (p_i[leg] - p_i_ref[leg]), (p_i[leg] - p_i_ref[leg]))
+        # J += ca.trace(Gp - Gp @ R_ref.T @ R)
+        # J += ca.dot(R_pdot * pdot, pdot)
+        # J += ca.dot(R_omega * omega, omega)
+        # for leg in legs:
+        #     J += ca.dot(R_f_i * f_i[leg], f_i[leg])
 
         # dynamics constraints
         f = ca.MX(3, 1)
@@ -122,8 +123,34 @@ if __name__ == "__main__":
 
     opti.minimize(J)
 
-    # initial and final conditions constraint
-    # TODO
+    # # initial and final conditions constraint
+    # opti.subject_to(X[:, 0] == X_ref[:, 0])
+    # opti.subject_to(U[:, 0] == U_ref[:, 0])
+    # opti.subject_to(X[:, N] == X_ref[:, N])
+    # opti.subject_to(U[:, N] == U_ref[:, N])
 
     # initial solution guess
-    # TODO
+    opti.set_initial(X, X_ref)
+    opti.set_initial(U, U_ref)
+
+    # solve NLP
+    p_opts = {}
+    s_opts = {"print_level": 5}
+    opti.solver("ipopt", p_opts, s_opts)
+    sol = opti.solve()
+
+    X_sol = np.array(sol.value(X))
+    U_sol = np.array(sol.value(U))
+    animate_traj(X_sol, U_sol, dt)
+
+    # temp
+    from utils import extract_state_np
+
+    for k in range(N + 1):
+        p, R, pdot, omega, p_i, f_i = extract_state_np(X_sol, U_sol, k)
+        for leg in legs:
+            print(f_i[leg])
+
+    import ipdb
+
+    ipdb.set_trace()

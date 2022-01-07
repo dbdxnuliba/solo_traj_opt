@@ -6,7 +6,7 @@ import numpy as np
 
 def generate_reference():
     tf = 5
-    N = int(tf * 10)
+    N = int(tf * 4)
     dt = tf / (N)
     t_vals = np.linspace(0, tf, N + 1)
 
@@ -15,7 +15,7 @@ def generate_reference():
 
     for k in range(N + 1):
         t = t_vals[k]
-        p = np.array([0.0, 0.0, 0.3 + 0.1 * np.sin(t / tf * 4 * np.pi)])
+        p = np.array([0.0, 0.0, 0.3])
         R = rot_mat_np(np.array([0, 1, 0]), 0.0)
         pdot = np.array([0.0, 0.0, 0.0])
         omega = np.array([0.0, 0.0, 0.0])
@@ -25,7 +25,7 @@ def generate_reference():
             p_i[leg] = B_p_Bi[leg]
             f_i[leg] = np.array([0.0, 0.0, 0.0])
             if p_i[leg][2] <= eps:
-                f_i[leg][2] = m / (4.0 * np.linalg.norm(g))
+                f_i[leg][2] = m * np.linalg.norm(g) / 4.0
         X[:, k], U[:, k] = flatten_state_np(p, R, pdot, omega, p_i, f_i)
 
     return X, U, dt

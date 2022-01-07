@@ -23,7 +23,7 @@ def draw_T(T):
         line.set_color(axis_colors[axis])
 
 
-def draw(p, R, p_i, f_i, f_len=3.0):
+def draw(p, R, p_i, f_i, f_len=0.05):
     T_B = homog_np(p, R)
     p_Bi = {}
     for leg in legs:
