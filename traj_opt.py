@@ -20,6 +20,26 @@ x_kin_ub = l_thigh
 z_kin_lb = -l_thigh
 z_kin_ub = l_thigh
 
+# temporary hard coded constant desired values
+p_des = np.array([0.0, 0.0, l_thigh / 2.0])
+p_i_des = {}
+for leg in legs:
+    p_i_des[leg] = B_p_Bi[leg]
+R_des = np.eye(3)
+
+# LQR costs
+Q_p = np.array([1000.0, 1000.0, 1000.0])
+Q_p_i = np.array([1000.0, 1000.0, 1000.0])
+Q_R = np.array([50.0, 50.0, 50.0])
+R_pdot = np.array([1.0, 1.0, 1.0])
+R_omega = np.array([10.0, 10.0, 10.0])
+R_f_i = np.array([0.0001, 0.0001, 0.0001])
+
+Kp_vec = np.linalg.solve(
+    np.array([[2.0, 1.0, 1], [1.0, 2.0, 1.0], [1.0, 1.0, 2.0]]), 2.0 * Q_R
+)  # 3 element vector
+Gp = sum(Kp_vec) * np.eye(3) - np.diag(Kp_vec)  # 3x3 matrix
+
 skew_func = derive_skew()
 rotMat_func = derive_rotMat()
 homog_func = derive_homog()
@@ -45,9 +65,7 @@ if __name__ == "__main__":
     opti = ca.Opti()
     X = opti.variable(18, N + 1)
     U = opti.variable(24, N + 1)
-
-    # objective function
-    # TODO
+    J = ca.MX(1, 1)
 
     for k in range(N + 1):
         # extract state
@@ -65,6 +83,16 @@ if __name__ == "__main__":
                 None,
                 None,
             )
+
+        # objective function
+        J += ca.dot(Q_p * (p - p_des), (p - p_des))
+        for leg in legs:
+            J += ca.dot(Q_p_i * (p_i[leg] - p_i_des[leg]), (p_i[leg] - p_i_des[leg]))
+        J += ca.trace(Gp - Gp @ R_des.T @ R)
+        J += ca.dot(R_pdot * pdot, pdot)
+        J += ca.dot(R_omega * omega, omega)
+        for leg in legs:
+            J += ca.dot(R_f_i * f_i[leg], f_i[leg])
 
         # dynamics constraints
         f = ca.MX(3, 1)
@@ -116,6 +144,8 @@ if __name__ == "__main__":
                         -eps, f_i[leg][2] * (p_i_next[leg][1] - p_i[leg][1]), eps
                     )
                 )
+
+    opti.minimize(J)
 
     # initial and final conditions constraint
     # TODO
