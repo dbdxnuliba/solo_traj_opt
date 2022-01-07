@@ -1,10 +1,12 @@
 from constants import *
 from utils import (
+    legs,
     derive_skew_ca,
     derive_rot_mat_ca,
     derive_homog_ca,
     derive_reverse_homog_ca,
     derive_mult_homog_point_ca,
+    extract_state_ca,
 )
 import numpy as np
 import casadi as ca
@@ -20,35 +22,6 @@ for leg in legs:
     p_i_des[leg] = B_p_Bi[leg]
 R_des = np.eye(3)
 
-
-def extract_state(X, U, k):
-    p = X[:3, k]
-    R_flat = X[3:12, k]
-    R = ca.reshape(R_flat, 3, 3)
-    pdot = X[12:15, k]
-    omega = X[15:18, k]
-    p_i = {}
-    f_i = {}
-    for leg in legs:
-        p_i[leg] = U[3 * leg.value : leg.value * 3 + 3, k]
-        f_i[leg] = U[12 + 3 * leg.value : 12 + leg.value * 3 + 3, k]
-    return p, R, pdot, omega, p_i, f_i
-
-
-def flatten_state(p, R, pdot, omega, p_i, f_i):
-    R_flat = ca.reshape(R, 9, 1)
-    p_i_flat = ca.MX(12, 1)
-    f_i_flat = ca.MX(12, 1)
-    for leg in legs:
-        p_i_flat[3 * leg.value : leg.value * 3 + 3] = p_i[leg]
-        f_i_flat[3 * leg.value : leg.value * 3 + 3] = f_i[leg]
-
-    X_k = ca.vertcat(p, R_flat, pdot, omega)
-    U_k = ca.vertcat(p_i_flat, f_i_flat)
-
-    return X_k, U_k
-
-
 if __name__ == "__main__":
     skew_ca = derive_skew_ca()
     rot_mat_ca = derive_rot_mat_ca()
@@ -63,11 +36,16 @@ if __name__ == "__main__":
 
     for k in range(N + 1):
         # extract state
-        p, R, pdot, omega, p_i, f_i = extract_state(X, U, k)
+        p, R, pdot, omega, p_i, f_i = extract_state_ca(X, U, k)
         if k != N:
-            p_next, R_next, pdot_next, omega_next, p_i_next, f_i_next = extract_state(
-                X, U, k + 1
-            )
+            (
+                p_next,
+                R_next,
+                pdot_next,
+                omega_next,
+                p_i_next,
+                f_i_next,
+            ) = extract_state_ca(X, U, k + 1)
         else:
             p_next, R_next, pdot_next, omega_next, p_i_next, f_i_next = (
                 None,

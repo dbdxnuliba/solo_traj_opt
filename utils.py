@@ -1,5 +1,13 @@
+import enum
 import numpy as np
 import casadi as ca
+
+# enum for the four legs
+class legs(enum.Enum):
+    FL = 0
+    FR = 1
+    HL = 2
+    HR = 3
 
 
 # given 1x3 vector, returns 3x3 skew symmetric cross product matrix
@@ -95,6 +103,34 @@ def derive_mult_homog_point_ca():
     return ca.Function("mult_homog_point_ca", [T, p], [mult_homog_point_sym])
 
 
+def extract_state_ca(X, U, k):
+    p = X[:3, k]
+    R_flat = X[3:12, k]
+    R = ca.reshape(R_flat, 3, 3)
+    pdot = X[12:15, k]
+    omega = X[15:18, k]
+    p_i = {}
+    f_i = {}
+    for leg in legs:
+        p_i[leg] = U[3 * leg.value : leg.value * 3 + 3, k]
+        f_i[leg] = U[12 + 3 * leg.value : 12 + leg.value * 3 + 3, k]
+    return p, R, pdot, omega, p_i, f_i
+
+
+def flatten_state_ca(p, R, pdot, omega, p_i, f_i):
+    R_flat = ca.reshape(R, 9, 1)
+    p_i_flat = ca.MX(12, 1)
+    f_i_flat = ca.MX(12, 1)
+    for leg in legs:
+        p_i_flat[3 * leg.value : leg.value * 3 + 3] = p_i[leg]
+        f_i_flat[3 * leg.value : leg.value * 3 + 3] = f_i[leg]
+
+    X_k = ca.vertcat(p, R_flat, pdot, omega)
+    U_k = ca.vertcat(p_i_flat, f_i_flat)
+
+    return X_k, U_k
+
+
 # test functions
 if __name__ == "__main__":
     x_axis = np.eye(3)[:, 0]
@@ -130,8 +166,7 @@ if __name__ == "__main__":
     print(rot_mat_ca(s, th))
     print(
         np.linalg.norm(
-            rot_mat_ca(x_axis, np.pi / 4) @ rot_mat_ca(x_axis, np.pi / 4).T
-            - np.eye(3)
+            rot_mat_ca(x_axis, np.pi / 4) @ rot_mat_ca(x_axis, np.pi / 4).T - np.eye(3)
         )
     )
 
@@ -153,6 +188,18 @@ if __name__ == "__main__":
     T = homog_np(p, R)
     print(T @ reverse_homog_ca(T))
     print(reverse_homog_ca(T) @ T)
+
+    print("\ntest extract_state")
+    X = ca.SX.sym("X", 18, 3)
+    U = ca.SX.sym("U", 24, 3)
+    p, R, pdot, omega, p_i, f_i = extract_state_ca(X, U, 0)
+    print("p:", p)
+    print("R:", R)
+    print("pdot:", pdot)
+    print("omega:", omega)
+    for leg in legs:
+        print("p_i[", leg.value, "]:", p_i[leg])
+        print("f_i[", leg.value, "]:", f_i[leg])
 
     import ipdb
 

@@ -1,14 +1,5 @@
-from utils import homog_np
+from utils import legs, homog_np
 import numpy as np
-import enum
-
-# enum for the four legs
-class legs(enum.Enum):
-    FL = 0
-    FR = 1
-    HL = 2
-    HR = 3
-
 
 # robot physical length paramters
 l_Bx = 0.380  # length of body, measured axis to axis at hip (from CAD)

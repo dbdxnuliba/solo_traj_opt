@@ -1,5 +1,5 @@
 from constants import *
-from utils import homog_np, mult_homog_point_np
+from utils import legs, homog_np, mult_homog_point_np
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
