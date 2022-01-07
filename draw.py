@@ -105,7 +105,7 @@ if __name__ == "__main__":
     f_i = {}
     for leg in legs:
         p_i[leg] = B_p_Bi[leg]
-        f_i[leg] = np.array([0.0, 0.0, 0.04])
+        f_i[leg] = np.array([0.0, 0.0, 3.0])
 
     anim_fig, ax = init_fig()
     draw(p=p, R=R, p_i=p_i, f_i=f_i)

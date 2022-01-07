@@ -15,8 +15,8 @@ def generate_reference():
 
     for k in range(N + 1):
         t = t_vals[k]
-        p = np.array([0.0, 0.0, 0.3])
-        R = rot_mat_np(np.array([0, 1, 0]), 0.0)
+        p = np.array([0.05 * np.sin(t / tf * 3.0 * np.pi), 0.0, 0.2])
+        R = rot_mat_np(np.array([0.0, 1.0, 0.0]), 0.2 * np.sin(t / tf * 1.0 * np.pi))
         pdot = np.array([0.0, 0.0, 0.0])
         omega = np.array([0.0, 0.0, 0.0])
         p_i = {}

@@ -59,13 +59,13 @@ if __name__ == "__main__":
 
         # objective function
         J += ca.dot(Q_p * (p - p_ref), (p - p_ref))
-        # for leg in legs:
-        #     J += ca.dot(Q_p_i * (p_i[leg] - p_i_ref[leg]), (p_i[leg] - p_i_ref[leg]))
-        # J += ca.trace(Gp - Gp @ R_ref.T @ R)
-        # J += ca.dot(R_pdot * pdot, pdot)
-        # J += ca.dot(R_omega * omega, omega)
-        # for leg in legs:
-        #     J += ca.dot(R_f_i * f_i[leg], f_i[leg])
+        for leg in legs:
+            J += ca.dot(Q_p_i * (p_i[leg] - p_i_ref[leg]), (p_i[leg] - p_i_ref[leg]))
+        J += ca.trace(Gp - Gp @ R_ref.T @ R)
+        J += ca.dot(R_pdot * pdot, pdot)
+        J += ca.dot(R_omega * omega, omega)
+        for leg in legs:
+            J += ca.dot(R_f_i * f_i[leg], f_i[leg])
 
         # dynamics constraints
         f = ca.MX(3, 1)
@@ -108,7 +108,7 @@ if __name__ == "__main__":
         # contact constraints
         for leg in legs:
             opti.subject_to(p_i[leg][2] >= 0.0)
-            opti.subject_to(f_i[leg][2] * p_i[leg][2] < eps)
+            opti.subject_to(opti.bounded(-eps, f_i[leg][2] * p_i[leg][2], eps))
             if k != N:
                 opti.subject_to(
                     opti.bounded(
@@ -123,11 +123,9 @@ if __name__ == "__main__":
 
     opti.minimize(J)
 
-    # # initial and final conditions constraint
-    # opti.subject_to(X[:, 0] == X_ref[:, 0])
-    # opti.subject_to(U[:, 0] == U_ref[:, 0])
-    # opti.subject_to(X[:, N] == X_ref[:, N])
-    # opti.subject_to(U[:, N] == U_ref[:, N])
+    # initial conditions constraint
+    opti.subject_to(X[:, 0] == X_ref[:, 0])
+    opti.subject_to(U[:, 0] == U_ref[:, 0])
 
     # initial solution guess
     opti.set_initial(X, X_ref)
@@ -142,15 +140,3 @@ if __name__ == "__main__":
     X_sol = np.array(sol.value(X))
     U_sol = np.array(sol.value(U))
     animate_traj(X_sol, U_sol, dt)
-
-    # temp
-    from utils import extract_state_np
-
-    for k in range(N + 1):
-        p, R, pdot, omega, p_i, f_i = extract_state_np(X_sol, U_sol, k)
-        for leg in legs:
-            print(f_i[leg])
-
-    import ipdb
-
-    ipdb.set_trace()

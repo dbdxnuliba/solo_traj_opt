@@ -41,15 +41,15 @@ z_kin_lower_lim = -(l_thigh + l_calf) / np.sqrt(2)
 z_kin_upper_lim = (l_thigh + l_calf) / np.sqrt(2)
 
 # LQR costs
-Q_p = np.array([1000.0, 1000.0, 1000.0])
-Q_p_i = np.array([1000.0, 1000.0, 1000.0])
-Q_R = np.array([50.0, 50.0, 50.0])
+Q_p = np.array([100.0, 100.0, 100.0])
+Q_p_i = np.array([100.0, 100.0, 100.0])
+Q_R = np.array([1000.0, 1000.0, 1000.0])
 R_pdot = np.array([1.0, 1.0, 1.0])
 R_omega = np.array([10.0, 10.0, 10.0])
 R_f_i = np.array([0.0001, 0.0001, 0.0001])
 
 # matrix used for rotation matrix cost, calculated from above values
 Kp_vec = np.linalg.solve(
-    np.array([[2.0, 1.0, 1], [1.0, 2.0, 1.0], [1.0, 1.0, 2.0]]), 2.0 * Q_R
+    np.array([[2.0, 1.0, 1.0], [1.0, 2.0, 1.0], [1.0, 1.0, 2.0]]), 2.0 * Q_R
 )  # 3 element vector
 Gp = sum(Kp_vec) * np.eye(3) - np.diag(Kp_vec)  # 3x3 matrix
