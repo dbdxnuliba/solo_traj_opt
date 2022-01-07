@@ -71,7 +71,7 @@ if __name__ == "__main__":
         tau = ca.MX(3, 1)
         for leg in legs:
             f += f_i[leg]
-            tau += ca.cross(p_i[leg], f_i[leg])
+            tau += ca.cross(p_i[leg] - p, f_i[leg])
         if k != N:
             opti.subject_to(p_next == p + pdot * dt)
             opti.subject_to(pdot_next == pdot + (f / m + g) * dt)
