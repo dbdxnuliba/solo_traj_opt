@@ -1,7 +1,8 @@
 from constants import *
-from utils import legs, homog_np, mult_homog_point_np
+from utils import legs, homog_np, mult_homog_point_np, extract_state_np
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 
 plt.style.use("seaborn")
@@ -27,20 +28,6 @@ def draw(p, R, p_i, f_i, f_len=3.0):
     p_Bi = {}
     for leg in legs:
         p_Bi[leg] = mult_homog_point_np(T_B, B_p_Bi[leg])
-
-    anim_fig = plt.figure(figsize=(6, 6))
-    ax = Axes3D(anim_fig, auto_add_to_figure=False)
-    anim_fig.add_axes(ax)
-    ax.view_init(azim=-45)
-    ax.set_xlim3d([-0.5, 0.5])
-    ax.set_ylim3d([-0.5, 0.5])
-    ax.set_zlim3d([0, 1])
-    ax.set_box_aspect([1, 1, 1])
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    ax.set_zlabel("z")
-    if ax.collections:
-        ax.collections.pop()
 
     body_coords = np.vstack(
         (p_Bi[legs.FL], p_Bi[legs.FR], p_Bi[legs.HR], p_Bi[legs.HL], p_Bi[legs.FL])
@@ -72,6 +59,43 @@ def draw(p, R, p_i, f_i, f_len=3.0):
     draw_T(T_B)
 
 
+def init_fig():
+    anim_fig = plt.figure(figsize=(6, 6))
+    ax = Axes3D(anim_fig, auto_add_to_figure=False)
+    anim_fig.add_axes(ax)
+    ax.view_init(azim=-45)
+    ax.set_xlim3d([-0.5, 0.5])
+    ax.set_ylim3d([-0.5, 0.5])
+    ax.set_zlim3d([0, 1])
+    ax.set_box_aspect([1, 1, 1])
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_zlabel("z")
+    return anim_fig, ax
+
+
+def animate_traj(X, U, dt):
+    anim_fig, ax = init_fig()
+
+    def draw_frame(k):
+        p, R, pdot, omega, p_i, f_i = extract_state_np(X, U, k)
+        while ax.lines:
+            ax.lines.pop()
+        draw(p, R, p_i, f_i)
+
+    N = X.shape[1] - 1
+
+    anim = animation.FuncAnimation(
+        anim_fig,
+        draw_frame,
+        frames=N + 1,
+        interval=dt * 1000.0,
+        repeat=True,
+        blit=False,
+    )
+    plt.show()
+
+
 if __name__ == "__main__":
     from utils import rot_mat_np
 
@@ -83,5 +107,6 @@ if __name__ == "__main__":
         p_i[leg] = B_p_Bi[leg]
         f_i[leg] = np.array([0.0, 0.0, 0.04])
 
+    anim_fig, ax = init_fig()
     draw(p=p, R=R, p_i=p_i, f_i=f_i)
     plt.show()
