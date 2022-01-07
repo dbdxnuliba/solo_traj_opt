@@ -61,6 +61,20 @@ def extract_state(X, U, k):
     return p, R, pdot, omega, p_i, f_i
 
 
+def flatten_state(p, R, pdot, omega, p_i, f_i):
+    R_flat = ca.reshape(R, 9, 1)
+    p_i_flat = ca.MX(12, 1)
+    f_i_flat = ca.MX(12, 1)
+    for leg in legs:
+        p_i_flat[3 * leg.value : leg.value * 3 + 3] = p_i[leg]
+        f_i_flat[3 * leg.value : leg.value * 3 + 3] = f_i[leg]
+
+    X_k = ca.vertcat(p, R_flat, pdot, omega)
+    U_k = ca.vertcat(p_i_flat, f_i_flat)
+
+    return X_k, U_k
+
+
 if __name__ == "__main__":
     opti = ca.Opti()
     X = opti.variable(18, N + 1)
