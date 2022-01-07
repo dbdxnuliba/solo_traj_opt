@@ -9,36 +9,16 @@ from utils import (
 import numpy as np
 import casadi as ca
 
+# temporary hard coded constant desired values
 tf = 5
 N = int(tf * 4)
 dt = tf / (N)
-eps = 1e-6
 
-# kinematics constraints paramters
-x_kin_lb = -l_Bx / 2.0
-x_kin_ub = l_thigh
-z_kin_lb = -l_thigh
-z_kin_ub = l_thigh
-
-# temporary hard coded constant desired values
 p_des = np.array([0.0, 0.0, l_thigh / 2.0])
 p_i_des = {}
 for leg in legs:
     p_i_des[leg] = B_p_Bi[leg]
 R_des = np.eye(3)
-
-# LQR costs
-Q_p = np.array([1000.0, 1000.0, 1000.0])
-Q_p_i = np.array([1000.0, 1000.0, 1000.0])
-Q_R = np.array([50.0, 50.0, 50.0])
-R_pdot = np.array([1.0, 1.0, 1.0])
-R_omega = np.array([10.0, 10.0, 10.0])
-R_f_i = np.array([0.0001, 0.0001, 0.0001])
-
-Kp_vec = np.linalg.solve(
-    np.array([[2.0, 1.0, 1], [1.0, 2.0, 1.0], [1.0, 1.0, 2.0]]), 2.0 * Q_R
-)  # 3 element vector
-Gp = sum(Kp_vec) * np.eye(3) - np.diag(Kp_vec)  # 3x3 matrix
 
 skew_func = derive_skew()
 rotMat_func = derive_rotMat()
@@ -129,9 +109,12 @@ if __name__ == "__main__":
             T_Bi = T_B @ B_T_Bi[leg]
             Bi_T = reverse_homog_func(T_Bi)
             Bi_p_i = mult_homog_point_func(Bi_T, p_i[leg])
-            opti.subject_to(opti.bounded(x_kin_lb, Bi_p_i[0], x_kin_ub))
+            if leg == legs.FL or leg == legs.FR:
+                opti.subject_to(opti.bounded(-x_kin_in_lim, Bi_p_i[0], x_kin_out_lim))
+            else:
+                opti.subject_to(opti.bounded(-x_kin_out_lim, Bi_p_i[0], x_kin_in_lim))
             opti.subject_to(opti.bounded(-eps, Bi_p_i[1], eps))
-            opti.subject_to(opti.bounded(z_kin_lb, Bi_p_i[2], z_kin_ub))
+            opti.subject_to(opti.bounded(z_kin_lower_lim, Bi_p_i[2], z_kin_upper_lim))
 
         # friction pyramid constraints
         for leg in legs:

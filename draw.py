@@ -70,9 +70,6 @@ def draw(p, R, p_i, f_i, f_len=0.5):
 
     draw_T(np.eye(4))
     draw_T(T_B)
-    for leg in legs:
-        T_Bi = T_B @ B_T_Bi[leg]
-        draw_T(T_Bi)
 
 
 if __name__ == "__main__":
