@@ -1,10 +1,10 @@
 from constants import *
 from utils import (
-    derive_skew,
-    derive_rotMat,
-    derive_homog,
-    derive_reverse_homog,
-    derive_mult_homog_point,
+    derive_skew_ca,
+    derive_rot_mat_ca,
+    derive_homog_ca,
+    derive_reverse_homog_ca,
+    derive_mult_homog_point_ca,
 )
 import numpy as np
 import casadi as ca
@@ -19,12 +19,6 @@ p_i_des = {}
 for leg in legs:
     p_i_des[leg] = B_p_Bi[leg]
 R_des = np.eye(3)
-
-skew_func = derive_skew()
-rotMat_func = derive_rotMat()
-homog_func = derive_homog()
-reverse_homog_func = derive_reverse_homog()
-mult_homog_point_func = derive_mult_homog_point()
 
 
 def extract_state(X, U, k):
@@ -56,6 +50,12 @@ def flatten_state(p, R, pdot, omega, p_i, f_i):
 
 
 if __name__ == "__main__":
+    skew_ca = derive_skew_ca()
+    rot_mat_ca = derive_rot_mat_ca()
+    homog_ca = derive_homog_ca()
+    reverse_homog_ca = derive_reverse_homog_ca()
+    mult_homog_point_ca = derive_mult_homog_point_ca()
+
     opti = ca.Opti()
     X = opti.variable(18, N + 1)
     U = opti.variable(24, N + 1)
@@ -97,18 +97,18 @@ if __name__ == "__main__":
         if k != N:
             opti.subject_to(p_next == p + pdot * dt)
             opti.subject_to(pdot_next == pdot + (f / m + g) * dt)
-            opti.subject_to(R_next == R @ rotMat_func(omega, dt))
+            opti.subject_to(R_next == R @ rot_mat_ca(omega, dt))
             opti.subject_to(
                 omega_next
-                == omega + B_I_inv @ (R.T @ tau - skew_func(omega) @ B_I @ omega) * dt
+                == omega + B_I_inv @ (R.T @ tau - skew_ca(omega) @ B_I @ omega) * dt
             )
 
         # kinematics constraints
-        T_B = homog_func(p, R)
+        T_B = homog_ca(p, R)
         for leg in legs:
             T_Bi = T_B @ B_T_Bi[leg]
-            Bi_T = reverse_homog_func(T_Bi)
-            Bi_p_i = mult_homog_point_func(Bi_T, p_i[leg])
+            Bi_T = reverse_homog_ca(T_Bi)
+            Bi_p_i = mult_homog_point_ca(Bi_T, p_i[leg])
             if leg == legs.FL or leg == legs.FR:
                 opti.subject_to(opti.bounded(-x_kin_in_lim, Bi_p_i[0], x_kin_out_lim))
             else:
