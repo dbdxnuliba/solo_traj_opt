@@ -75,6 +75,11 @@ def traj_opt(X_ref, U_ref, dt):
         J += ca.dot(Q_omega * error_omega, error_omega)
         for leg in legs:
             J += ca.dot(Q_f_i * error_f_i[leg], error_f_i[leg])
+        if k != N:
+            p_i_dot = {}
+            for leg in legs:
+                p_i_dot[leg] = p_i_next[leg] - p_i[leg]
+            J += ca.dot(R_p_i_dot * p_i_dot[leg], p_i_dot[leg])
 
         # dynamics constraints
         f = ca.MX(3, 1)
