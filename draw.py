@@ -1,6 +1,7 @@
 from constants import *
 from utils import (
     legs,
+    rot_mat_2d_np,
     homog_np,
     mult_homog_point_np,
     B_T_Bi,
@@ -30,12 +31,13 @@ def draw_T(T):
         line.set_color(axis_colors[axis])
 
 
-def draw(p, R, p_i, f_i, f_len=0.05):
+def draw(p, R, p_i, f_i, f_len=0.03):
     T_B = homog_np(p, R)
     p_Bi = {}
     for leg in legs:
         p_Bi[leg] = mult_homog_point_np(T_B, B_p_Bi[leg])
 
+    # draw body
     body_coords = np.vstack(
         (p_Bi[legs.FL], p_Bi[legs.FR], p_Bi[legs.HR], p_Bi[legs.HL], p_Bi[legs.FL])
     ).T
@@ -45,16 +47,38 @@ def draw(p, R, p_i, f_i, f_len=0.05):
     line.set_color("b")
     line.set_marker("o")
 
+    # inverse and forward kinematics to extract knee location
     q_i = solo_IK_np(p, R, p_i)
+    p_knee_i = {}
+    p_foot_i = {}
+    for leg in legs:
+        Bi_xz_knee = rot_mat_2d_np(q_i[leg][0] - np.pi / 2.0) @ np.array([l_thigh, 0.0])
+        Bi_xz_foot = Bi_xz_knee + rot_mat_2d_np(
+            q_i[leg][0] - np.pi / 2.0 + q_i[leg][1]
+        ) @ np.array([l_calf, 0.0])
+        Bi_p_knee_i = np.array([Bi_xz_knee[0], 0.0, Bi_xz_knee[1]])
+        Bi_p_foot_i = np.array([Bi_xz_foot[0], 0.0, Bi_xz_foot[1]])
+        T_Bi = T_B @ B_T_Bi[leg]
+        p_knee_i[leg] = mult_homog_point_np(T_Bi, Bi_p_knee_i)
+        p_foot_i[leg] = mult_homog_point_np(T_Bi, Bi_p_foot_i)
 
-    feet_coords = np.vstack((p_i[legs.FL], p_i[legs.FR], p_i[legs.HR], p_i[legs.HL])).T
-    line = plt.plot([], [])[0]
-    line.set_data(feet_coords[0], feet_coords[1])
-    line.set_3d_properties(feet_coords[2])
-    line.set_color("g")
-    line.set_marker("o")
-    line.set_linestyle("None")
+    # ensure foot positions match the values calculated from IK and FK
+    # note that the y position of the legs are allowed to deviate from 0 by
+    # amount eps in the kinematics constraint, so we use something larger here
+    # to check if the error is "not close to zero"
+    for leg in legs:
+        assert np.linalg.norm(p_foot_i[leg] - p_i[leg]) < np.sqrt(eps)
 
+    # draw legs
+    for leg in legs:
+        leg_coords = np.vstack((p_Bi[leg], p_knee_i[leg], p_i[leg])).T
+        line = plt.plot([], [])[0]
+        line.set_data(leg_coords[0], leg_coords[1])
+        line.set_3d_properties(leg_coords[2])
+        line.set_color("g")
+        line.set_marker("o")
+
+    # draw ground reaction forces
     f_coords = {}
     for leg in legs:
         f_vec = p_i[leg] + f_len * f_i[leg]

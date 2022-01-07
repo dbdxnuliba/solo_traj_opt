@@ -24,6 +24,11 @@ def derive_skew_ca():
     return ca.Function("skew_ca", [s], [skew_sym])
 
 
+# 2D rotation matrix
+def rot_mat_2d_np(th):
+    return np.array([[np.cos(th), -np.sin(th)], [np.sin(th), np.cos(th)]])
+
+
 # given axis and angle, returns 3x3 rotation matrix
 def rot_mat_np(s, th):
     # normalize s if isn't already normalized
@@ -199,7 +204,7 @@ def solo_IK_np(p, R, p_i):
         T_Bi = T_B @ B_T_Bi[leg]
         Bi_T = reverse_homog_np(T_Bi)
         Bi_p_i = mult_homog_point_np(Bi_T, p_i[leg])
-        rotate_90 = np.array([[0.0, -1.0], [1.0, 0.0]])
+        rotate_90 = rot_mat_2d_np(np.pi / 2.0)
         x_z = rotate_90 @ np.array([Bi_p_i[0], Bi_p_i[2]])
         if leg == legs.FL or leg == legs.FR:
             q1, q2 = planar_IK_np(l_thigh, l_calf, x_z[0], x_z[1], True)

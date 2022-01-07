@@ -6,7 +6,7 @@ import numpy as np
 
 def generate_reference():
     tf = 10
-    N = int(tf * 8)
+    N = int(tf * 10)
     dt = tf / (N)
     t_vals = np.linspace(0, tf, N + 1)
 
@@ -19,10 +19,10 @@ def generate_reference():
             [
                 0.0,
                 0.0,
-                0.12 + 0.05 * np.sin(t / tf * 3.0 * np.pi),
+                0.15 + 0.05 * np.sin(t / tf * 9.0 * np.pi),
             ]
         )
-        R = rot_mat_np(np.array([0.0, 1.0, 0.0]), 0.2 * np.sin(t / tf * 4.0 * np.pi))
+        R = rot_mat_np(np.array([0.0, 1.0, 0.0]), 0.2 * np.sin(t / tf * 16.0 * np.pi))
         pdot = np.array([0.0, 0.0, 0.0])
         omega = np.array([0.0, 0.0, 0.0])
         p_i = {}
