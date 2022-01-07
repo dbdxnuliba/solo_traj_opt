@@ -91,14 +91,18 @@ if __name__ == "__main__":
             opti.subject_to(opti.bounded(-eps, Bi_p_i[1], eps))
             opti.subject_to(opti.bounded(z_kin_lb, Bi_p_i[2], z_kin_ub))
 
-        # friction cone constraints
-        # TODO
+        # friction pyramid constraints
+        for leg in legs:
+            opti.subject_to(f_i[leg][2] >= 0.0)
+            opti.subject_to(
+                opti.bounded(-mu * f_i[leg][2], f_i[leg][0], mu * f_i[leg][2])
+            )
+            opti.subject_to(
+                opti.bounded(-mu * f_i[leg][2], f_i[leg][1], mu * f_i[leg][2])
+            )
 
         # contact constraints
         # TODO
-
-        # import ipdb
-        # ipdb.set_trace()
 
     # initial and final conditions constraint
     # TODO
