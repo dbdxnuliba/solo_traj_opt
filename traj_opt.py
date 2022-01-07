@@ -102,7 +102,20 @@ if __name__ == "__main__":
             )
 
         # contact constraints
-        # TODO
+        for leg in legs:
+            opti.subject_to(p_i[leg][2] >= 0.0)
+            opti.subject_to(f_i[leg][2] * p_i[leg][2] < eps)
+            if k != N:
+                opti.subject_to(
+                    opti.bounded(
+                        -eps, f_i[leg][2] * (p_i_next[leg][0] - p_i[leg][0]), eps
+                    )
+                )
+                opti.subject_to(
+                    opti.bounded(
+                        -eps, f_i[leg][2] * (p_i_next[leg][1] - p_i[leg][1]), eps
+                    )
+                )
 
     # initial and final conditions constraint
     # TODO
