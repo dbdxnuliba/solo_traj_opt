@@ -31,7 +31,7 @@ def draw_T(T):
         line.set_color(axis_colors[axis])
 
 
-def draw(p, R, p_i, f_i, f_len=0.03):
+def draw(p, R, p_i, f_i, f_len=0.02):
     T_B = homog_np(p, R)
     p_Bi = {}
     for leg in legs:
@@ -107,7 +107,7 @@ def init_fig():
     return anim_fig, ax
 
 
-def animate_traj(X, U, dt):
+def animate_traj(X, U, dt, fname=None):
     anim_fig, ax = init_fig()
 
     def draw_frame(k):
@@ -126,6 +126,12 @@ def animate_traj(X, U, dt):
         repeat=True,
         blit=False,
     )
+
+    if fname is not None:
+        Writer = animation.writers["ffmpeg"]
+        writer = Writer(fps=int(1 / dt), metadata=dict(artist="Me"), bitrate=1000)
+        anim.save("videos/" + fname + ".mp4", writer=writer)
+
     plt.show()
 
 

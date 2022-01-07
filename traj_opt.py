@@ -14,15 +14,13 @@ from generate_reference import generate_reference
 import numpy as np
 import casadi as ca
 
-if __name__ == "__main__":
+
+def traj_opt(X_ref, U_ref, dt):
     skew_ca = derive_skew_ca()
     rot_mat_ca = derive_rot_mat_ca()
     homog_ca = derive_homog_ca()
     reverse_homog_ca = derive_reverse_homog_ca()
     mult_homog_point_ca = derive_mult_homog_point_ca()
-
-    X_ref, U_ref, dt = generate_reference()
-    animate_traj(X_ref, U_ref, dt)
 
     N = N = X_ref.shape[1] - 1
 
@@ -152,4 +150,14 @@ if __name__ == "__main__":
     # extract solution as numpy array
     X_sol = np.array(sol.value(X))
     U_sol = np.array(sol.value(U))
-    animate_traj(X_sol, U_sol, dt)
+
+    return X_sol, U_sol
+
+
+if __name__ == "__main__":
+    X_ref, U_ref, dt = generate_reference()
+    animate_traj(X_ref, U_ref, dt)
+
+    X_sol, U_sol = traj_opt(X_ref, U_ref, dt)
+    fname = "01-07-walk-back-and-forth"
+    animate_traj(X_sol, U_sol, dt, fname)

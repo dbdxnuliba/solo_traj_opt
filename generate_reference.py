@@ -15,7 +15,7 @@ def generate_reference():
 
     for k in range(N + 1):
         t = t_vals[k]
-        p = np.array([0.3 * np.sin(t / tf * 6 * np.pi), 0.0, 0.2])
+        p = np.array([0.3 * np.cos(t / tf * 6 * np.pi + np.pi), 0.0, 0.2])
         R = rot_mat_np(np.array([0.0, 1.0, 0.0]), 0.0)
         pdot = np.array([0.0, 0.0, 0.0])
         omega = np.array([0.0, 0.0, 0.0])
@@ -23,7 +23,7 @@ def generate_reference():
         f_i = {}
         for leg in legs:
             p_i[leg] = B_p_Bi[leg].copy()
-            p_i[leg][0] += 0.3 * np.sin(t / tf * 6 * np.pi)
+            p_i[leg][0] += 0.3 * np.cos(t / tf * 6 * np.pi + np.pi)
             if leg == legs.FL or leg == legs.HR:
                 p_i[leg][2] += max(0.0, 0.05 * np.sin(10.0 * t))
             else:
