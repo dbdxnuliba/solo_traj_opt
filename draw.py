@@ -22,7 +22,7 @@ def draw_T(T):
         line.set_color(axis_colors[axis])
 
 
-def draw(p, R, p_i, f_i, f_len=0.5):
+def draw(p, R, p_i, f_i, f_len=3.0):
     T_B = homog_np(p, R)
     p_Bi = {}
     for leg in legs:
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     f_i = {}
     for leg in legs:
         p_i[leg] = B_p_Bi[leg]
-        f_i[leg] = np.array([0.0, 0.0, 0.2])
+        f_i[leg] = np.array([0.0, 0.0, 0.04])
 
     draw(p=p, R=R, p_i=p_i, f_i=f_i)
     plt.show()
