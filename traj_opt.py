@@ -58,14 +58,24 @@ if __name__ == "__main__":
         )
 
         # objective function
-        J += ca.dot(Q_p * (p - p_ref), (p - p_ref))
+        error_p = p - p_ref
+        error_p_i = {}
         for leg in legs:
-            J += ca.dot(Q_p_i * (p_i[leg] - p_i_ref[leg]), (p_i[leg] - p_i_ref[leg]))
-        J += ca.trace(Gp - Gp @ R_ref.T @ R)
-        J += ca.dot(R_pdot * pdot, pdot)
-        J += ca.dot(R_omega * omega, omega)
+            error_p_i[leg] = p_i[leg] - p_i_ref[leg]
+        weighted_error_R = ca.trace(Gp - Gp @ R_ref.T @ R)
+        error_pdot = pdot - pdot_ref
+        error_omega = omega - R.T @ R_ref @ omega_ref
+        error_f_i = {}
         for leg in legs:
-            J += ca.dot(R_f_i * f_i[leg], f_i[leg])
+            error_f_i[leg] = f_i[leg] - f_i_ref[leg]
+        J += ca.dot(Q_p * error_p, error_p)
+        for leg in legs:
+            J += ca.dot(Q_p_i * error_p_i[leg], error_p_i[leg])
+        J += weighted_error_R ** 2
+        J += ca.dot(R_pdot * error_pdot, error_pdot)
+        J += ca.dot(R_omega * error_omega, error_omega)
+        for leg in legs:
+            J += ca.dot(R_f_i * error_f_i[leg], error_f_i[leg])
 
         # dynamics constraints
         f = ca.MX(3, 1)
@@ -121,6 +131,7 @@ if __name__ == "__main__":
                     )
                 )
 
+    # apply objective function
     opti.minimize(J)
 
     # initial conditions constraint
@@ -137,6 +148,7 @@ if __name__ == "__main__":
     opti.solver("ipopt", p_opts, s_opts)
     sol = opti.solve()
 
+    # extract solution as numpy array
     X_sol = np.array(sol.value(X))
     U_sol = np.array(sol.value(U))
     animate_traj(X_sol, U_sol, dt)
