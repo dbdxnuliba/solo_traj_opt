@@ -1,5 +1,5 @@
 from constants import *
-from utils import homog, mult_homog_point
+from utils import homog_np, mult_homog_point_np
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -23,10 +23,10 @@ def draw_T(T):
 
 
 def draw(p, R, p_i, f_i, f_len=0.5):
-    T_B = homog(p, R)
+    T_B = homog_np(p, R)
     p_Bi = {}
     for leg in legs:
-        p_Bi[leg] = mult_homog_point(T_B, B_p_Bi[leg])
+        p_Bi[leg] = mult_homog_point_np(T_B, B_p_Bi[leg])
 
     anim_fig = plt.figure(figsize=(6, 6))
     ax = Axes3D(anim_fig, auto_add_to_figure=False)
@@ -73,10 +73,10 @@ def draw(p, R, p_i, f_i, f_len=0.5):
 
 
 if __name__ == "__main__":
-    from utils import rotMat
+    from utils import rot_mat_np
 
     p = np.array([0.0, 0.0, 0.3])
-    R = rotMat(np.array([0, 1, 0]), 0.1)
+    R = rot_mat_np(np.array([0, 1, 0]), 0.1)
     p_i = {}
     f_i = {}
     for leg in legs:

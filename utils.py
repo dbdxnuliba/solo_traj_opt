@@ -3,7 +3,7 @@ import casadi as ca
 
 
 # given 1x3 vector, returns 3x3 skew symmetric cross product matrix
-def skew(s):
+def skew_np(s):
     return np.array([[0, -s[2], s[1]], [s[2], 0, -s[0]], [-s[1], s[0], 0]])
 
 
@@ -24,14 +24,14 @@ def derive_skew():
 
 
 # given axis and angle, returns 3x3 rotation matrix
-def rotMat(s, th):
+def rot_mat_np(s, th):
     # normalize s if isn't already normalized
     norm_s = np.linalg.norm(s)
     assert norm_s != 0.0
     s_normalized = s / norm_s
 
     # Rodrigues' rotation formula
-    skew_s = skew(s_normalized)
+    skew_s = skew_np(s_normalized)
     return np.eye(3) + np.sin(th) * skew_s + (1.0 - np.cos(th)) * skew_s @ skew_s
 
 
@@ -50,7 +50,7 @@ def derive_rotMat():
 
 # given position vector and rotation matrix, returns 4x4 homogeneous
 # transformation matrix
-def homog(p, R):
+def homog_np(p, R):
     return np.block([[R, p[:, np.newaxis]], [np.zeros((1, 3)), 1]])
 
 
@@ -80,7 +80,7 @@ def derive_reverse_homog():
 
 # multiplication between a 4x4 homogenous transformation matrix and 3x1
 # position vector, returns 3x1 position
-def mult_homog_point(T, p):
+def mult_homog_point_np(T, p):
     p_aug = np.concatenate((p, [1.0]))
     return (T @ p_aug)[:3]
 
@@ -103,27 +103,27 @@ if __name__ == "__main__":
 
     print("\ntest skew")
     skew_func = derive_skew()
-    print(skew(np.array([1, 2, 3])))
+    print(skew_np(np.array([1, 2, 3])))
     print(skew_func(np.array([1, 2, 3])))
     s = ca.SX.sym("s", 3)
     print(skew_func(s))
 
     print("\ntest rotMat")
     rotMat_func = derive_rotMat()
-    print(rotMat(x_axis, np.pi / 4))
+    print(rot_mat_np(x_axis, np.pi / 4))
     print(rotMat_func(x_axis, np.pi / 4))
-    print(rotMat(y_axis, np.pi / 4))
+    print(rot_mat_np(y_axis, np.pi / 4))
     print(rotMat_func(y_axis, np.pi / 4))
-    print(rotMat(z_axis, np.pi / 4))
+    print(rot_mat_np(z_axis, np.pi / 4))
     print(rotMat_func(z_axis, np.pi / 4))
     print(
         np.linalg.norm(
-            rotMat(x_axis, np.pi / 4) @ rotMat(x_axis, np.pi / 4).T - np.eye(3)
+            rot_mat_np(x_axis, np.pi / 4) @ rot_mat_np(x_axis, np.pi / 4).T - np.eye(3)
         )
     )
     print(
         np.linalg.norm(
-            rotMat(x_axis, np.pi / 4).T @ rotMat(x_axis, np.pi / 4) - np.eye(3)
+            rot_mat_np(x_axis, np.pi / 4).T @ rot_mat_np(x_axis, np.pi / 4) - np.eye(3)
         )
     )
     th = ca.SX.sym("th")
@@ -138,19 +138,19 @@ if __name__ == "__main__":
     print("\ntest homog")
     homog_func = derive_homog()
     p = np.array([1, 2, 3])
-    R = rotMat(x_axis, np.pi / 4)
-    print(homog(p, R))
+    R = rot_mat_np(x_axis, np.pi / 4)
+    print(homog_np(p, R))
     print(homog_func(p, R))
 
     print("\ntest mult_homog_point")
     mult_homog_point_func = derive_mult_homog_point()
-    print(mult_homog_point(homog(x_axis, R), y_axis))
-    print(mult_homog_point_func(homog(x_axis, R), y_axis))
+    print(mult_homog_point_np(homog_np(x_axis, R), y_axis))
+    print(mult_homog_point_func(homog_np(x_axis, R), y_axis))
 
     reverse_homog_func = derive_reverse_homog()
     T = ca.SX.sym("T", 4, 4)
     print(reverse_homog_func(T))
-    T = homog(p, R)
+    T = homog_np(p, R)
     print(T @ reverse_homog_func(T))
     print(reverse_homog_func(T) @ T)
 

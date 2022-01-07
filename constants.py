@@ -1,4 +1,4 @@
-from utils import homog
+from utils import homog_np
 import numpy as np
 import enum
 
@@ -37,7 +37,7 @@ B_p_Bi[legs.HL] = np.array([-l_Bx / 2.0, l_By / 2.0, 0.0])
 B_p_Bi[legs.HR] = np.array([-l_Bx / 2.0, -l_By / 2.0, 0.0])
 B_T_Bi = {}
 for leg in legs:
-    B_T_Bi[leg] = homog(B_p_Bi[leg], np.eye(3))
+    B_T_Bi[leg] = homog_np(B_p_Bi[leg], np.eye(3))
 
 # global optimization paramters
 eps = 1e-6  # numerical zero threshold
