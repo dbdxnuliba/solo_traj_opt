@@ -1,5 +1,12 @@
 from constants import *
-from utils import legs, homog_np, mult_homog_point_np, extract_state_np
+from utils import (
+    legs,
+    homog_np,
+    mult_homog_point_np,
+    B_T_Bi,
+    extract_state_np,
+    solo_IK_np,
+)
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -37,6 +44,8 @@ def draw(p, R, p_i, f_i, f_len=0.05):
     line.set_3d_properties(body_coords[2])
     line.set_color("b")
     line.set_marker("o")
+
+    q_i = solo_IK_np(p, R, p_i)
 
     feet_coords = np.vstack((p_i[legs.FL], p_i[legs.FR], p_i[legs.HR], p_i[legs.HL])).T
     line = plt.plot([], [])[0]

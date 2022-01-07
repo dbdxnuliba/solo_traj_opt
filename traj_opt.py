@@ -6,6 +6,7 @@ from utils import (
     derive_homog_ca,
     derive_reverse_homog_ca,
     derive_mult_homog_point_ca,
+    B_T_Bi,
     extract_state_ca,
 )
 from draw import animate_traj

@@ -1,5 +1,13 @@
-from utils import legs, homog_np
+import enum
 import numpy as np
+
+# enum for the four legs
+class legs(enum.Enum):
+    FL = 0
+    FR = 1
+    HL = 2
+    HR = 3
+
 
 # robot physical length paramters
 l_Bx = 0.380  # length of body, measured axis to axis at hip (from CAD)
@@ -20,15 +28,12 @@ B_I_inv = np.diag(1 / np.array([0.00578574, 0.01938108, 0.02476124]))
 g = np.array([0.0, 0.0, -9.81])  # gravity vector
 mu = 0.7  # friction coefficient
 
-# position and coodinate systems of corners of robot, in body frame (so it's a constant)
+# position of corners of robot, in body frame (so it's a constant)
 B_p_Bi = {}
 B_p_Bi[legs.FL] = np.array([l_Bx / 2.0, l_By / 2.0, 0.0])
 B_p_Bi[legs.FR] = np.array([l_Bx / 2.0, -l_By / 2.0, 0.0])
 B_p_Bi[legs.HL] = np.array([-l_Bx / 2.0, l_By / 2.0, 0.0])
 B_p_Bi[legs.HR] = np.array([-l_Bx / 2.0, -l_By / 2.0, 0.0])
-B_T_Bi = {}
-for leg in legs:
-    B_T_Bi[leg] = homog_np(B_p_Bi[leg], np.eye(3))
 
 # global optimization paramters
 eps = 1e-6  # numerical zero threshold

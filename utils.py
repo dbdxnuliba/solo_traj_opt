@@ -1,13 +1,6 @@
-import enum
+from constants import *
 import numpy as np
 import casadi as ca
-
-# enum for the four legs
-class legs(enum.Enum):
-    FL = 0
-    FR = 1
-    HL = 2
-    HR = 3
 
 
 # given 1x3 vector, returns 3x3 skew symmetric cross product matrix
@@ -73,6 +66,18 @@ def derive_homog_ca():
     return ca.Function("homog_ca", [p, R], [homog_sym])
 
 
+# reverses the direction of the coordinate transformation defined by a 4x4
+# homogeneous transformation matrix
+def reverse_homog_np(T):
+    R = T[:3, :3]
+    p = T[:3, 3]
+    reverse_homog = np.zeros((4, 4))
+    reverse_homog[:3, :3] = R.T
+    reverse_homog[:3, 3] = -R.T @ p
+    reverse_homog[3, 3] = 1.0
+    return reverse_homog
+
+
 # derives a symbolic function that reverses the direction of the coordinate
 # transformation defined by a 4x4 homogeneous transformation matrix
 def derive_reverse_homog_ca():
@@ -101,6 +106,41 @@ def derive_mult_homog_point_ca():
     p_aug[:3] = p
     mult_homog_point_sym = (T @ p_aug)[:3]
     return ca.Function("mult_homog_point_ca", [T, p], [mult_homog_point_sym])
+
+
+# generic planar 2 link inverse kinematics implementation
+# returns the closest point within the workspace if the requested point is
+# outside of it
+def planar_IK_np(l1, l2, x, y, elbow_up):
+    l = np.sqrt(x ** 2.0 + y ** 2.0)
+    l = max(abs(l1 - l2), min(l, l1 + l2))
+
+    alpha = np.arctan2(y, x)
+
+    cos_beta = (l ** 2 + l1 ** 2 - l2 ** 2.0) / (2.0 * l * l1)
+    cos_beta = max(-1.0, min(cos_beta, 1.0))
+    beta = np.arccos(cos_beta)
+
+    cos_th2_abs = (l ** 2 - l1 ** 2.0 - l2 ** 2.0) / (2.0 * l1 * l2)
+    cos_th2_abs = max(-1.0, min(cos_th2_abs, 1.0))
+    th2_abs = np.arccos(cos_th2_abs)
+
+    if elbow_up:
+        th1 = alpha - beta
+        th2 = th2_abs
+    else:
+        th1 = alpha + beta
+        th2 = -th2_abs
+
+    return th1, th2
+
+
+# Solo specific functions below
+
+# position of corners of robot, in body frame (so it's a constant)
+B_T_Bi = {}
+for leg in legs:
+    B_T_Bi[leg] = homog_np(B_p_Bi[leg], np.eye(3))
 
 
 # given numpy trajectory matrix, extract state at timestep k
@@ -149,6 +189,25 @@ def flatten_state_np(p, R, pdot, omega, p_i, f_i):
     U_k = np.hstack((p_i_flat, f_i_flat))
 
     return X_k, U_k
+
+
+# inverse kinematics for the solo 8 robot
+def solo_IK_np(p, R, p_i):
+    T_B = homog_np(p, R)
+    q_i = {}
+    for leg in legs:
+        T_Bi = T_B @ B_T_Bi[leg]
+        Bi_T = reverse_homog_np(T_Bi)
+        Bi_p_i = mult_homog_point_np(Bi_T, p_i[leg])
+        rotate_90 = np.array([[0.0, -1.0], [1.0, 0.0]])
+        x_z = rotate_90 @ np.array([Bi_p_i[0], Bi_p_i[2]])
+        if leg == legs.FL or leg == legs.FR:
+            q1, q2 = planar_IK_np(l_thigh, l_calf, x_z[0], x_z[1], True)
+        else:
+            q1, q2 = planar_IK_np(l_thigh, l_calf, x_z[0], x_z[1], False)
+        q_i[leg] = np.array([q1, q2])
+
+    return q_i
 
 
 # test functions
