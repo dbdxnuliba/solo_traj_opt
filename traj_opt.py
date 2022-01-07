@@ -73,10 +73,10 @@ if __name__ == "__main__":
         for leg in legs:
             J += ca.dot(Q_p_i * error_p_i[leg], error_p_i[leg])
         J += weighted_error_R ** 2
-        J += ca.dot(R_pdot * error_pdot, error_pdot)
-        J += ca.dot(R_omega * error_omega, error_omega)
+        J += ca.dot(Q_pdot * error_pdot, error_pdot)
+        J += ca.dot(Q_omega * error_omega, error_omega)
         for leg in legs:
-            J += ca.dot(R_f_i * error_f_i[leg], error_f_i[leg])
+            J += ca.dot(Q_f_i * error_f_i[leg], error_f_i[leg])
 
         # dynamics constraints
         f = ca.MX(3, 1)

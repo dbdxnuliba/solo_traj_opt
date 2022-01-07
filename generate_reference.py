@@ -25,9 +25,9 @@ def generate_reference():
             p_i[leg] = B_p_Bi[leg].copy()
             p_i[leg][0] += 0.3 * np.sin(t / tf * 6 * np.pi)
             if leg == legs.FL or leg == legs.HR:
-                p_i[leg][2] += max(0.0, 0.1 * np.sin(t / tf * 20.0 * np.pi))
+                p_i[leg][2] += max(0.0, 0.05 * np.sin(10.0 * t))
             else:
-                p_i[leg][2] += max(0.0, 0.1 * np.sin(t / tf * 20.0 * np.pi + np.pi))
+                p_i[leg][2] += max(0.0, 0.05 * np.sin(10.0 * t + np.pi))
             f_i[leg] = np.array([0.0, 0.0, 0.0])
             if p_i[leg][2] <= eps:
                 f_i[leg][2] = m * np.linalg.norm(g) / 4.0
