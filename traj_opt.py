@@ -163,11 +163,11 @@ if __name__ == "__main__":
     import time
 
     X_ref, U_ref, dt = generate_reference()
-    fname_ref = "01-07-jump-ref"
+    fname_ref = "01-07-walk-ref"
     animate_traj(X_ref, U_ref, dt, fname_ref)
 
     start_time = time.time()
     X_sol, U_sol = traj_opt(X_ref, U_ref, dt)
     print("optimization took {} minutes".format((time.time() - start_time) / 60.0))
-    fname = "01-07-jump"
+    fname = "01-07-walk"
     animate_traj(X_sol, U_sol, dt, fname)
