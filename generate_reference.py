@@ -5,8 +5,8 @@ import numpy as np
 
 
 def generate_reference():
-    tf = 20.0
-    N = int(tf * 10)
+    tf = 5.0
+    N = int(tf * 20)
     dt = tf / (N)
     t_vals = np.linspace(0, tf, N + 1)
 
@@ -15,19 +15,27 @@ def generate_reference():
 
     for k in range(N + 1):
         t = t_vals[k]
-        p = np.array([0.3 * np.cos(t / tf * 6 * np.pi + np.pi), 0.0, 0.2])
+        p = np.array([0.0, 0.0, 0.29 + 0.23 * np.cos(8.0 * t + np.pi)])
         R = rot_mat_np(np.array([0.0, 1.0, 0.0]), 0.0)
-        pdot = np.array([0.0, 0.0, 0.0])
+        if k != N:
+            p_next = np.array(
+                [0.0, 0.0, 0.29 + 0.23 * np.cos(8.0 * t_vals[k + 1] + np.pi)]
+            )
+            pdot = (p_next - p) / dt
+        else:
+            p_prev = np.array(
+                [0.0, 0.0, 0.29 + 0.23 * np.cos(8.0 * t_vals[k - 1] + np.pi)]
+            )
+            pdot = (p - p_prev) / dt
+        # pdot = np.array([0.0, 0.0, 0.0])
         omega = np.array([0.0, 0.0, 0.0])
         p_i = {}
         f_i = {}
         for leg in legs:
             p_i[leg] = B_p_Bi[leg].copy()
-            p_i[leg][0] += 0.3 * np.cos(t / tf * 6 * np.pi + np.pi)
-            if leg == legs.FL or leg == legs.HR:
-                p_i[leg][2] += max(0.0, 0.05 * np.sin(10.0 * t))
-            else:
-                p_i[leg][2] += max(0.0, 0.05 * np.sin(10.0 * t + np.pi))
+            p_i[leg][0] += p[0]
+            p_i[leg][1] += p[1]
+            p_i[leg][2] += max(0.0, 0.22 * np.cos(8.0 * t + np.pi))
             f_i[leg] = np.array([0.0, 0.0, 0.0])
             if p_i[leg][2] <= eps:
                 f_i[leg][2] = m * np.linalg.norm(g) / 4.0

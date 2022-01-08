@@ -78,7 +78,7 @@ def traj_opt(X_ref, U_ref, dt):
         if k != N:
             p_i_dot = {}
             for leg in legs:
-                p_i_dot[leg] = p_i_next[leg] - p_i[leg]
+                p_i_dot[leg] = (p_i_next[leg] - p_i[leg]) / dt
             J += ca.dot(R_p_i_dot * p_i_dot[leg], p_i_dot[leg])
 
         # dynamics constraints
@@ -160,9 +160,14 @@ def traj_opt(X_ref, U_ref, dt):
 
 
 if __name__ == "__main__":
-    X_ref, U_ref, dt = generate_reference()
-    animate_traj(X_ref, U_ref, dt)
+    import time
 
+    X_ref, U_ref, dt = generate_reference()
+    fname_ref = "01-07-jump-ref"
+    animate_traj(X_ref, U_ref, dt, fname_ref)
+
+    start_time = time.time()
     X_sol, U_sol = traj_opt(X_ref, U_ref, dt)
-    fname = "01-07-walk-back-and-forth"
+    print("optimization took {} minutes".format((time.time() - start_time) / 60.0))
+    fname = "01-07-jump"
     animate_traj(X_sol, U_sol, dt, fname)
