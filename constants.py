@@ -56,6 +56,6 @@ R_p_i_dot = np.array([1.0, 1.0, 1.0])
 
 # matrix used for rotation matrix cost, calculated from above values
 Kp_vec = np.linalg.solve(
-    np.array([[2.0, 1.0, 1.0], [1.0, 2.0, 1.0], [1.0, 1.0, 2.0]]), 2.0 * Q_R
+    np.array([[2.0, 1.0, 1.0], [1.0, 2.0, 1.0], [1.0, 1.0, 2.0]]), 4.0 * Q_R
 )  # 3 element vector
 Gp = sum(Kp_vec) * np.eye(3) - np.diag(Kp_vec)  # 3x3 matrix

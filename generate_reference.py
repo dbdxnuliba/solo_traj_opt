@@ -5,7 +5,6 @@ from utils import (
     mult_homog_point_np,
     rot_mat_2d_np,
     rot_mat_np,
-    extract_state_np,
     flatten_state_np,
     homog_np,
 )

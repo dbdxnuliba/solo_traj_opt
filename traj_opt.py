@@ -7,6 +7,7 @@ from utils import (
     derive_reverse_homog_ca,
     derive_mult_homog_point_ca,
     B_T_Bi,
+    extract_state_np,
     extract_state_ca,
 )
 from draw import animate_traj
@@ -22,7 +23,7 @@ def traj_opt(X_ref, U_ref, dt):
     reverse_homog_ca = derive_reverse_homog_ca()
     mult_homog_point_ca = derive_mult_homog_point_ca()
 
-    N = N = X_ref.shape[1] - 1
+    N = X_ref.shape[1] - 1
 
     opti = ca.Opti()
     X = opti.variable(18, N + 1)
@@ -139,8 +140,24 @@ def traj_opt(X_ref, U_ref, dt):
     opti.minimize(J)
 
     # initial conditions constraint
-    opti.subject_to(X[:, 0] == X_ref[:, 0])
-    opti.subject_to(U[:, 0] == U_ref[:, 0])
+    p_init, R_init, pdot_init, omega_init, p_i_init, f_i_init = extract_state_ca(
+        X, U, 0
+    )
+    (
+        p_ref_init,
+        R_ref_init,
+        pdot_ref_init,
+        omega_ref_init,
+        p_i_ref_init,
+        f_i_ref_init,
+    ) = extract_state_np(X_ref, U_ref, 0)
+    opti.subject_to(p_init == p_ref_init)
+    opti.subject_to(R_init == R_ref_init)
+    for leg in legs:
+        opti.subject_to(p_i_init[leg] == p_i_ref_init[leg])
+    opti.subject_to(pdot_init == np.zeros_like(pdot_ref_init))
+    opti.subject_to(omega_init == np.zeros_like(omega_ref_init))
+    # note: no initial condition on force
 
     # initial solution guess
     opti.set_initial(X, X_ref)
@@ -163,11 +180,11 @@ if __name__ == "__main__":
     import time
 
     X_ref, U_ref, dt = generate_reference()
-    fname_ref = "01-07-stand-ref"
+    fname_ref = None
     animate_traj(X_ref, U_ref, dt, fname_ref)
 
     start_time = time.time()
     X_sol, U_sol = traj_opt(X_ref, U_ref, dt)
     print("optimization took {} minutes".format((time.time() - start_time) / 60.0))
-    fname = "01-07-stand"
+    fname = None
     animate_traj(X_sol, U_sol, dt, fname)
