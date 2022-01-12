@@ -107,7 +107,7 @@ def init_fig():
     return anim_fig, ax
 
 
-def animate_traj(X, U, dt, fname=None):
+def animate_traj(X, U, dt, fname=None, display=True):
     anim_fig, ax = init_fig()
 
     def draw_frame(k):
@@ -132,7 +132,8 @@ def animate_traj(X, U, dt, fname=None):
         writer = Writer(fps=int(1 / dt), metadata=dict(artist="Me"), bitrate=1000)
         anim.save("videos/" + fname + ".mp4", writer=writer)
 
-    plt.show()
+    if display:
+        plt.show()
 
 
 if __name__ == "__main__":

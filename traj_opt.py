@@ -177,14 +177,8 @@ def traj_opt(X_ref, U_ref, dt):
 
 
 if __name__ == "__main__":
-    import time
-
     X_ref, U_ref, dt = generate_reference()
-    fname_ref = None
-    animate_traj(X_ref, U_ref, dt, fname_ref)
+    animate_traj(X_ref, U_ref, dt)
 
-    start_time = time.time()
     X_sol, U_sol = traj_opt(X_ref, U_ref, dt)
-    print("optimization took {} minutes".format((time.time() - start_time) / 60.0))
-    fname = None
-    animate_traj(X_sol, U_sol, dt, fname)
+    animate_traj(X_sol, U_sol, dt)
