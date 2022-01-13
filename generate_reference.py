@@ -9,6 +9,28 @@ from utils import (
     homog_np,
 )
 import numpy as np
+from scipy.interpolate import interp1d
+from scipy.interpolate import CubicHermiteSpline
+
+
+# linearly interpolate x and y, evaluate at t
+def linear_interp_t(x, y, t):
+    f = interp1d(x, y)
+    return f(t)
+
+
+# interpolate x and y, evaluate at t using cubic splines with zero deriatives
+# this creates an interpolation similar to linear interpolation, but with
+# smoothed corners
+def cubic_interp_t(x, y, t):
+    f = CubicHermiteSpline(x, y, np.zeros_like(x))
+    return f(t)
+
+
+# sinusoidal function evaluated at t defined using oscillation period, minimum
+# and maximum values
+def sinusoid(period, min_val, max_val, t):
+    return (max_val - min_val) / 2.0 * (1 - np.cos(2 * np.pi / period * t)) + min_val
 
 
 def generate_reference():
@@ -21,8 +43,9 @@ def generate_reference():
     U = np.zeros((24, N + 1))
 
     for k in range(N + 1):
-        t = t_vals[k]
-        angle = np.pi / 2.0 * max(-np.sin(t / tf * 3.0 * np.pi), 0.0)
+        angle = cubic_interp_t(
+            [0, 1.6, 2.5, 3.4, tf], [0, 0, np.pi / 2.0, 0, 0], t_vals[k]
+        )
         p = np.array([-l_Bx / 2.0, 0.0, l_thigh])
         p_xz = rot_mat_2d_np(angle) @ np.array([l_Bx / 2.0, 0.0])
         p += np.array([p_xz[0], 0.0, p_xz[1]])
