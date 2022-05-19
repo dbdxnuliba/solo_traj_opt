@@ -77,7 +77,7 @@ def calc_fric_t(c_i_cqp):
     u_fric_t = np.full(dim_fric_fqp, np.inf)
     for leg in legs:
         if c_i_cqp[leg] == False:
-            u_fric_t[5 * leg.value - 1] = 0.0
+            u_fric_t[4 + 5 * leg.value] = 0.0
 
     return A_fric_t, l_fric_t, u_fric_t
 
