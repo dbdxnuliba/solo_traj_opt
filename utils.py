@@ -1,11 +1,24 @@
 from constants import *
 import numpy as np
+import scipy.sparse as sp
 import casadi as ca
 
 
 # given 1x3 vector, returns 3x3 skew symmetric cross product matrix
 def skew_np(s):
     return np.array([[0, -s[2], s[1]], [s[2], 0, -s[0]], [-s[1], s[0], 0]])
+
+
+# sparse skew matrix
+def skew_sp(s):
+    skew_sp = sp.lil_matrix((3, 3))
+    skew_sp[0, 1] = -s[2]
+    skew_sp[0, 2] = s[1]
+    skew_sp[1, 0] = s[2]
+    skew_sp[1, 2] = -s[0]
+    skew_sp[2, 0] = -s[1]
+    skew_sp[2, 1] = s[0]
+    return skew_sp
 
 
 # derives a symbolic version of the skew function
@@ -245,6 +258,9 @@ if __name__ == "__main__":
     print("p_i_extracted", p_i_extracted)
     print("f_i_extracted", f_i_extracted)
     print("R_extracted", R_extracted)
+
+    print("skew_np(r)", skew_np(r))
+    print("skew_sp(r).toarray()", skew_sp(r).toarray())
 
     import ipdb
 
