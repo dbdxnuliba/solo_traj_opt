@@ -45,11 +45,40 @@ def calc_dyn_t(l_i_cqp, dt):
             l_i_cqp[leg]
         )
 
-    l_dyn_t = np.zeros(9)
+    l_dyn_t = np.zeros(dim_dyn_fqp)
     l_dyn_t[5] = m * g * dt
     u_dyn_t = l_dyn_t
 
     return A_dyn_t, l_dyn_t, u_dyn_t
+
+
+def calc_fric_t(c_i_cqp):
+    A_fric_t = sp.lil_matrix((dim_fric_fqp, dim_x_fqp))
+    block = sp.lil_matrix((5, 3))
+    block[0, 0] = -1.0
+    block[0, 2] = mu
+    block[1, 0] = 1.0
+    block[1, 2] = mu
+    block[2, 1] = -1.0
+    block[2, 2] = mu
+    block[3, 1] = 1.0
+    block[3, 2] = mu
+    block[4, 2] = 1.0
+
+    for leg in legs:
+        A_fric_t[
+            5 * leg.value : 5 * (leg.value + 1),
+            9 + 3 * leg.value : 9 + 3 * (leg.value + 1),
+        ] = block
+
+    l_fric_t = np.zeros(dim_fric_fqp)
+
+    u_fric_t = np.full(dim_fric_fqp, np.inf)
+    for leg in legs:
+        if c_i_cqp[leg] == False:
+            u_fric_t[5 * leg.value - 1] = 0.0
+
+    return A_fric_t, l_fric_t, u_fric_t
 
 
 # test functions
@@ -64,11 +93,14 @@ if __name__ == "__main__":
         k_cqp = k_ref
         p_i_cqp = p_i_ref
         l_i_cqp = {}
+        c_i_cqp = {}
         for leg in legs:
             l_i_cqp[leg] = p_i_cqp[leg] - r_cqp
+            c_i_cqp[leg] = p_i_cqp[leg][-1] < eps_contact
 
         P_t, q_t = calc_obj_t(r_ref, l_ref, k_ref, r_cqp, l_cqp, k_cqp)
         A_dyn_t, l_dyn_t, u_dyn_t = calc_dyn_t(l_i_cqp, dt)
+        A_fric_t, l_fric_t, u_fric_t = calc_fric_t(c_i_cqp)
 
         import ipdb
 
