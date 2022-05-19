@@ -61,7 +61,7 @@ eps = 1e-6  # numerical zero threshold
 # )  # 3 element vector
 # Gp = sum(Kp_vec) * np.eye(3) - np.diag(Kp_vec)  # 3x3 matrix
 
-# BCD objective weights
+# BCD objective and constraint parameters
 phi_r = 1000.0  # COM reference tracking
 phi_l = 10.0  # momentum reference tracking
 phi_k = 100.0  # angular momentum reference tracking
@@ -70,6 +70,7 @@ L_l = phi_l  # momentum previous solution regularization
 L_k = phi_k  # angular momentum previous solution regularization
 L_p = 100.0  # foot previous solution regularization
 psi_f = 0.1  # force regularization
+L_kin = l_thigh + l_calf + l_Bx / 2  # max dist from COM to feet
 eps_contact = 1e-3  # ground contact distance threshold
 
 # optimization problem dimensionality parameters, per timestep

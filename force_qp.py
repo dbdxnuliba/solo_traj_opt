@@ -81,6 +81,28 @@ def calc_fric_t(c_i_cqp):
     return A_fric_t, l_fric_t, u_fric_t
 
 
+def calc_kin_t(p_i_cqp):
+    A_kin_t = sp.lil_matrix((dim_kin_fqp, dim_x_fqp))
+    block = np.vstack(
+        (
+            [-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0],
+            [-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0],
+            [-1.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0],
+        )
+    ).T
+
+    for leg in legs:
+        A_kin_t[8 * leg.value : 8 * (leg.value + 1), :3] = block
+
+    l_kin_t = np.full(dim_kin_fqp, -np.inf)
+
+    u_kin_t = np.full(dim_kin_fqp, L_kin)
+    for leg in legs:
+        u_kin_t[8 * leg.value : 8 * (leg.value + 1)] += block @ p_i_cqp[leg]
+
+    return A_kin_t, l_kin_t, u_kin_t
+
+
 # test functions
 if __name__ == "__main__":
     XR, dt = generate_reference()
@@ -101,6 +123,7 @@ if __name__ == "__main__":
         P_t, q_t = calc_obj_t(r_ref, l_ref, k_ref, r_cqp, l_cqp, k_cqp)
         A_dyn_t, l_dyn_t, u_dyn_t = calc_dyn_t(l_i_cqp, dt)
         A_fric_t, l_fric_t, u_fric_t = calc_fric_t(c_i_cqp)
+        A_kin_t, l_kin_t, u_kin_t = calc_kin_t(p_i_cqp)
 
         import ipdb
 
