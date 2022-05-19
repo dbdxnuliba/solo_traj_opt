@@ -37,8 +37,6 @@ B_p_Bi[legs.HL] = np.array([-l_Bx / 2.0, l_By / 2.0, 0.0])
 B_p_Bi[legs.HR] = np.array([-l_Bx / 2.0, -l_By / 2.0, 0.0])
 
 # global optimization paramters
-N = 300  # number of time intervals
-dt = 0.01  # physical length of time interval (seconds)
 eps = 1e-6  # numerical zero threshold
 
 # # kinematics constraints paramters
@@ -76,6 +74,7 @@ eps_contact = 1e-3  # ground contact distance threshold
 
 # optimization problem dimensionality parameters, per timestep
 dim_x = 33  # decision variables for global optimization
+dim_xR = dim_x + 9  # decision variables + base rotation matrix
 dim_x_fqp = 21  # decision variables for force QP
 dim_dyn_fqp = 9  # dynamic constraints for force QP
 dim_fric_fqp = 20  # friction constraints for force QP

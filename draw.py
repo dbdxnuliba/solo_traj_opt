@@ -107,16 +107,16 @@ def init_fig():
     return anim_fig, ax
 
 
-def animate_traj(X, U, dt, fname=None, display=True):
+def animate_traj(XR, dt, fname=None, display=True):
     anim_fig, ax = init_fig()
 
-    def draw_frame(k):
-        p, R, pdot, omega, p_i, f_i = extract_state_np(X, U, k)
+    def draw_frame(t):
+        r, l, k, p_i, f_i, R = extract_state_np(XR, t)
         while ax.lines:
             ax.lines.pop()
-        draw(p, R, p_i, f_i)
+        draw(r, R, p_i, f_i)
 
-    N = X.shape[1] - 1
+    N = XR.shape[1] - 1
 
     anim = animation.FuncAnimation(
         anim_fig,
