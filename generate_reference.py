@@ -1,11 +1,12 @@
 from constants import *
 from draw import animate_traj
 from utils import (
+    flatten_state_and_rot_np,
     legs,
     mult_homog_point_np,
     rot_mat_2d_np,
     rot_mat_np,
-    flatten_state_np,
+    flatten_state_and_rot_np,
     homog_np,
 )
 import numpy as np
@@ -106,7 +107,7 @@ def generate_reference():
             if p_i[leg][2] <= eps:
                 f_i[leg][2] = m * g / 4.0
 
-        XR[:, t] = flatten_state_np(r, l, k, p_i, f_i, R)
+        XR[:, t] = flatten_state_and_rot_np(r, l, k, p_i, f_i, R)
 
     return XR, dt
 

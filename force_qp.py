@@ -3,7 +3,7 @@ import scipy.sparse as sp
 import osqp
 
 from constants import *
-from utils import extract_state_np, skew_sp
+from utils import extract_state_np, skew_sp, extract_X_from_XR
 from generate_reference import generate_reference
 
 
@@ -103,28 +103,61 @@ def calc_kin_t(p_i_cqp):
     return A_kin_t, l_kin_t, u_kin_t
 
 
+def solve_force_qp(X_cqp, X_ref, dt):
+    N = X_cqp.shape[1] - 1  # number of time intervals
+    assert N == X_ref.shape[1] - 1
+
+    # construct objective
+    P = sp.lil_matrix((dim_x_fqp * (N + 1), dim_x_fqp * (N + 1)))
+    q = np.zeros(dim_x_fqp * (N + 1))
+    for t in np.arange(N + 1):
+        r_cqp_t, l_cqp_t, k_cqp_t, p_i_cqp_t, f_i_cqp_t = extract_state_np(X_cqp, t)
+        r_ref_t, l_ref_t, k_ref_t, p_i_ref_t, f_i_ref_t = extract_state_np(X_ref, t)
+        P_t, q_t = calc_obj_t(r_ref_t, l_ref_t, k_ref_t, r_cqp_t, l_cqp_t, k_cqp_t)
+
+        row_start = dim_x_fqp * t
+        row_end = dim_x_fqp * (t + 1)
+        col_start = dim_x_fqp * t
+        col_end = dim_x_fqp * (t + 1)
+
+        P[row_start:row_end, col_start:col_end] = P_t
+        q[row_start:row_end] = q_t
+
+    # construct constraints
+    num_constraints = dim_dyn_fqp * N + dim_fric_fqp * (N + 1) + dim_kin_fqp * (N + 1)
+    assert num_constraints == 61 * N + 52
+    A = sp.lil_matrix((num_constraints, dim_x_fqp * (N + 1)))
+    l = np.empty(num_constraints)
+    u = np.empty(num_constraints)
+
+    # dynamics
+    for idx, t in enumerate(np.arange(1, N + 1)):
+        r_cqp_t, l_cqp_t, k_cqp_t, p_i_cqp_t, f_i_cqp_t = extract_state_np(X_cqp, t)
+        r_ref_t, l_ref_t, k_ref_t, p_i_ref_t, f_i_ref_t = extract_state_np(X_ref, t)
+        P_t, q_t = calc_obj_t(r_ref_t, l_ref_t, k_ref_t, r_cqp_t, l_cqp_t, k_cqp_t)
+        l_i_cqp_t = {}
+        for leg in legs:
+            l_i_cqp_t[leg] = p_i_cqp_t[leg] - r_cqp_t
+        A_dyn_t, l_dyn_t, u_dyn_t = calc_dyn_t(l_i_cqp_t, dt)
+
+        row_start = dim_dyn_fqp * idx
+        row_end = dim_dyn_fqp * (idx + 1)
+        col_start = dim_x_fqp * idx
+        col_end = dim_x_fqp * (idx + 2)
+
+        A[row_start:row_end, col_start:col_end] = A_dyn_t
+        l[row_start:row_end] = l_dyn_t
+        u[row_start:row_end] = u_dyn_t
+
+
 # test functions
 if __name__ == "__main__":
-    XR, dt = generate_reference()
-    N = XR.shape[1] - 1
+    XR_ref, dt = generate_reference()
+    X_ref = extract_X_from_XR(XR_ref)
+    X_cqp = X_ref
 
-    for t in np.arange(N + 1):
-        r_ref, l_ref, k_ref, p_i_ref, f_i_ref, R_ref = extract_state_np(XR, t)
-        r_cqp = r_ref
-        l_cqp = l_ref
-        k_cqp = k_ref
-        p_i_cqp = p_i_ref
-        l_i_cqp = {}
-        c_i_cqp = {}
-        for leg in legs:
-            l_i_cqp[leg] = p_i_cqp[leg] - r_cqp
-            c_i_cqp[leg] = p_i_cqp[leg][-1] < eps_contact
+    solve_force_qp(X_cqp, X_ref, dt)
 
-        P_t, q_t = calc_obj_t(r_ref, l_ref, k_ref, r_cqp, l_cqp, k_cqp)
-        A_dyn_t, l_dyn_t, u_dyn_t = calc_dyn_t(l_i_cqp, dt)
-        A_fric_t, l_fric_t, u_fric_t = calc_fric_t(c_i_cqp)
-        A_kin_t, l_kin_t, u_kin_t = calc_kin_t(p_i_cqp)
+    import ipdb
 
-        import ipdb
-
-        ipdb.set_trace()
+    ipdb.set_trace()

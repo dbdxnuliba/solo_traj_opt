@@ -161,10 +161,10 @@ for leg in legs:
     B_T_Bi[leg] = homog_np(B_p_Bi[leg], np.eye(3))
 
 
-# given numpy trajectory matrix, extract state at timestep k
+# given numpy trajectory matrix, extract state and rotation R at timestep k
 # note the order argument in reshape, which is necessary to make it consistent
 # with casadi's reshape
-def extract_state_np(XR, t):
+def extract_state_and_rot_np(XR, t):
     r = XR[:3, t]
     l = XR[3:6, t]
     k = XR[6:9, t]
@@ -176,6 +176,21 @@ def extract_state_np(XR, t):
     R_flat = XR[-9:, t]
     R = np.reshape(R_flat, (3, 3), order="F")
     return r, l, k, p_i, f_i, R
+
+
+# given numpy trajectory matrix, extract state at timestep k
+# note the order argument in reshape, which is necessary to make it consistent
+# with casadi's reshape
+def extract_state_np(X, t):
+    r = X[:3, t]
+    l = X[3:6, t]
+    k = X[6:9, t]
+    p_i = {}
+    f_i = {}
+    for leg in legs:
+        p_i[leg] = X[9 + 3 * leg.value : 9 + leg.value * 3 + 3, t]
+        f_i[leg] = X[21 + 3 * leg.value : 21 + leg.value * 3 + 3, t]
+    return r, l, k, p_i, f_i
 
 
 # # given casadi trajectory matrix, extract state at timestep k
@@ -193,9 +208,9 @@ def extract_state_np(XR, t):
 #     return p, R, pdot, omega, p_i, f_i
 
 
-# given a numpy state, flattens it into the same form as a column of a
+# given a numpy state and rotation R, flattens it into the same form as a column of a
 # trajectory matrix
-def flatten_state_np(r, l, k, p_i, f_i, R):
+def flatten_state_and_rot_np(r, l, k, p_i, f_i, R):
     p_i_flat = np.zeros(12)
     f_i_flat = np.zeros(12)
     for leg in legs:
@@ -206,6 +221,13 @@ def flatten_state_np(r, l, k, p_i, f_i, R):
     XR_t = np.hstack((r, l, k, p_i_flat, f_i_flat, R_flat))
 
     return XR_t
+
+
+# extract state trajectory from state + rotation matrix trajectory
+def extract_X_from_XR(XR):
+    X = XR[:-9, :]
+    assert X.shape[0] == dim_x
+    return X
 
 
 # inverse kinematics for the solo 8 robot
@@ -240,7 +262,7 @@ if __name__ == "__main__":
         f_i[leg] = leg.value + np.array([0.07, 0.08, 0.09])
     R = rot_mat_np(np.array([0, 1, 0]), np.pi / 4.0)
 
-    XR_t = flatten_state_np(r, l, k, p_i, f_i, R)
+    XR_t = flatten_state_and_rot_np(r, l, k, p_i, f_i, R)
     print(XR_t)
 
     print("\ntest extract_state_np")
@@ -251,7 +273,7 @@ if __name__ == "__main__":
         p_i_extracted,
         f_i_extracted,
         R_extracted,
-    ) = extract_state_np(XR_t[:, np.newaxis], 0)
+    ) = extract_state_and_rot_np(XR_t[:, np.newaxis], 0)
     print("r_extracted", r_extracted)
     print("l_extracted", l_extracted)
     print("k_extracted", k_extracted)

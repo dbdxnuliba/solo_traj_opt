@@ -5,7 +5,7 @@ from utils import (
     homog_np,
     mult_homog_point_np,
     B_T_Bi,
-    extract_state_np,
+    extract_state_and_rot_np,
     solo_IK_np,
 )
 import numpy as np
@@ -111,7 +111,7 @@ def animate_traj(XR, dt, fname=None, display=True):
     anim_fig, ax = init_fig()
 
     def draw_frame(t):
-        r, l, k, p_i, f_i, R = extract_state_np(XR, t)
+        r, l, k, p_i, f_i, R = extract_state_and_rot_np(XR, t)
         while ax.lines:
             ax.lines.pop()
         draw(r, R, p_i, f_i)
