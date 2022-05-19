@@ -3,3 +3,6 @@
 
 # saved videos
 **/videos/
+
+# vscode configs
+**/.vscode
