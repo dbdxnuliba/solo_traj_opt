@@ -241,7 +241,8 @@ def produce_XR_from_X(X, dt, R_init=np.eye(3)):
     R_traj[:, :, 0] = R_init
     for t in np.arange(1, N + 1):
         k_t = X[6:9, t]
-        R_traj[:, :, t] = R_traj[:, :, t - 1] @ rot_mat_np(k_t, dt)
+        w_t = B_I @ k_t
+        R_traj[:, :, t] = R_traj[:, :, t - 1] @ rot_mat_np(w_t, dt)
 
     R_flat_traj = np.reshape(R_traj, (9, N + 1), order="F")
     XR_sol = np.vstack((X, R_flat_traj))
