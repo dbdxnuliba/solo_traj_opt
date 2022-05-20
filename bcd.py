@@ -33,7 +33,8 @@ if __name__ == "__main__":
         type=strtobool,
         default=1,
     )
-    parser.add_argument("-n", "--name", help="experiment name", type=str, default=None)
+    parser.add_argument(
+        "-n", "--name", help="experiment name", type=str, default=None)
     parser.add_argument(
         "-s", "--save", help="toggle whether to save video", type=strtobool, default=0
     )
@@ -67,8 +68,11 @@ if __name__ == "__main__":
         print("iteration {}, consensus = {:.3}".format(iter, consensus))
         consensus_arr.append(consensus)
 
+        X_prev = X
+
     print("\ntotal time used in OSQP: {:.3} seconds".format(np.sum(time_arr)))
-    print("total time used in program: {:.3} seconds".format(time.time() - start_time))
+    print("total time used in program: {:.3} seconds".format(
+        time.time() - start_time))
 
     fontsize = 15
     plt.subplot(2, 1, 1)

@@ -38,7 +38,7 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "stand"
+    motion_type = "walk"
 
     if motion_type == "walk":
         tf = 5.0
@@ -55,7 +55,8 @@ def generate_reference():
 
     for t in range(N + 1):
         if motion_type == "walk":
-            body_x = sinusoid(period=2.5, min_val=-0.3, max_val=0.3, t=t_vals[t])
+            body_x = sinusoid(period=2.5, min_val=-0.1,
+                              max_val=0.1, t=t_vals[t])
             r = np.array([body_x, 0.0, 0.2])
             R = np.eye(3)
             p_i = {}
@@ -63,9 +64,11 @@ def generate_reference():
                 p_i[leg] = B_p_Bi[leg].copy()
                 p_i[leg][0] += body_x
                 if leg == legs.FL or leg == legs.HR:
-                    p_i[leg][2] += max(0.0, sinusoid(0.6, -0.05, 0.05, t_vals[t], 0.0))
+                    p_i[leg][2] += max(0.0, sinusoid(0.6, -
+                                       0.05, 0.05, t_vals[t], 0.0))
                 else:
-                    p_i[leg][2] += max(0.0, sinusoid(0.6, -0.05, 0.05, t_vals[t], pi))
+                    p_i[leg][2] += max(0.0, sinusoid(0.6, -
+                                       0.05, 0.05, t_vals[t], pi))
         if motion_type == "jump":
             t_apex = 0.3
             z_apex = g * t_apex**2 / 2.0

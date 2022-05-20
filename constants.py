@@ -64,8 +64,8 @@ eps = 1e-6  # numerical zero threshold
 # BCD objective and constraint parameters
 phi_r = 1000.0  # COM reference tracking
 phi_l = 10.0  # momentum reference tracking
-phi_k = 100.0  # angular momentum reference tracking
-L_r = phi_r / 1.0  # COM previous solution regularization
+phi_k = 1.0  # angular momentum reference tracking
+L_r = phi_r  # COM previous solution regularization
 L_l = phi_l  # momentum previous solution regularization
 L_k = phi_k  # angular momentum previous solution regularization
 L_p = 100.0  # foot previous solution regularization
