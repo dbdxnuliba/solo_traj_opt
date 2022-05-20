@@ -134,7 +134,6 @@ def solve_force_qp(X_cqp, X_ref, dt):
     # dynamics
     for idx, t in enumerate(np.arange(1, N + 1)):
         r_cqp_t, l_cqp_t, k_cqp_t, p_i_cqp_t, f_i_cqp_t = extract_state_np(X_cqp, t)
-        P_t, q_t = calc_obj_t(r_ref_t, l_ref_t, k_ref_t, r_cqp_t, l_cqp_t, k_cqp_t)
         l_i_cqp_t = {}
         for leg in legs:
             l_i_cqp_t[leg] = p_i_cqp_t[leg] - r_cqp_t
