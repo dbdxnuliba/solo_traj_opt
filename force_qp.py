@@ -4,7 +4,7 @@ import osqp
 
 from constants import *
 from draw import animate_traj
-from utils import extract_state_np, skew_sp, extract_X_from_XR
+from utils import extract_state_np, produce_XR_from_X, skew_sp, extract_X_from_XR
 from generate_reference import generate_reference
 
 
@@ -204,10 +204,10 @@ if __name__ == "__main__":
 
     X_sol, info = solve_force_qp(X_cqp, X_ref, dt)
 
-    # temp
-    XR_sol = np.zeros(XR_ref.shape)
-    XR_sol[:dim_x, :] = X_sol
-    XR_sol[-9:, :] = XR_ref[-9:, :]
+    R_init_flat = XR_ref[-9:, 0]
+    R_init = np.reshape(R_init_flat, (3, 3), order="F")
+    XR_sol = produce_XR_from_X(X_sol, dt, R_init)
+
     animate_traj(XR_sol, dt)
 
     import ipdb

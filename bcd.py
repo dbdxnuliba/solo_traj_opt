@@ -11,7 +11,7 @@ from contact_qp import solve_contact_qp
 from constants import *
 from draw import animate_traj
 from generate_reference import generate_reference
-from utils import extract_X_from_XR
+from utils import extract_X_from_XR, produce_XR_from_X
 
 plt.style.use("seaborn")
 
@@ -33,8 +33,7 @@ if __name__ == "__main__":
         type=strtobool,
         default=1,
     )
-    parser.add_argument(
-        "-n", "--name", help="experiment name", type=str, default=None)
+    parser.add_argument("-n", "--name", help="experiment name", type=str, default=None)
     parser.add_argument(
         "-s", "--save", help="toggle whether to save video", type=strtobool, default=0
     )
@@ -69,10 +68,15 @@ if __name__ == "__main__":
         consensus_arr.append(consensus)
 
         X_prev = X
+    X, info_fqp = solve_force_qp(X, XR_ref, dt)
+    time_arr.append(info_fqp.run_time)
+
+    consensus_arr = np.array(consensus_arr)
+    obj_arr = np.array(obj_arr)
+    time_arr = np.array(time_arr)
 
     print("\ntotal time used in OSQP: {:.3} seconds".format(np.sum(time_arr)))
-    print("total time used in program: {:.3} seconds".format(
-        time.time() - start_time))
+    print("total time used in program: {:.3} seconds".format(time.time() - start_time))
 
     fontsize = 15
     plt.subplot(2, 1, 1)
@@ -95,8 +99,7 @@ if __name__ == "__main__":
     else:
         fname = None
 
-    # temp
-    XR_sol = np.zeros(XR_ref.shape)
-    XR_sol[:dim_x, :] = X
-    XR_sol[-9:, :] = XR_ref[-9:, :]
+    R_init_flat = XR_ref[-9:, 0]
+    R_init = np.reshape(R_init_flat, (3, 3), order="F")
+    XR_sol = produce_XR_from_X(X, dt, R_init)
     animate_traj(XR_sol, dt, fname=fname, display=args.display, repeat=False)

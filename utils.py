@@ -46,7 +46,10 @@ def rot_mat_2d_np(th):
 def rot_mat_np(s, th):
     # normalize s if isn't already normalized
     norm_s = np.linalg.norm(s)
-    assert norm_s != 0.0
+    # assert norm_s != 0.0
+    if norm_s == 0.0:
+        # if zero axis vector given, assume that there is no rotation
+        return np.eye(3)
     s_normalized = s / norm_s
 
     # Rodrigues' rotation formula
@@ -228,6 +231,22 @@ def extract_X_from_XR(XR):
     X = XR[:-9, :]
     assert X.shape[0] == dim_x
     return X
+
+
+# integrate angular velocity to produce rotation matrix and append
+def produce_XR_from_X(X, dt, R_init=np.eye(3)):
+    N = X.shape[1] - 1
+    R_traj = np.zeros((3, 3, N + 1))
+
+    R_traj[:, :, 0] = R_init
+    for t in np.arange(1, N + 1):
+        k_t = X[6:9, t]
+        R_traj[:, :, t] = R_traj[:, :, t - 1] @ rot_mat_np(k_t, dt)
+
+    R_flat_traj = np.reshape(R_traj, (9, N + 1), order="F")
+    XR_sol = np.vstack((X, R_flat_traj))
+
+    return XR_sol
 
 
 # inverse kinematics for the solo 8 robot
