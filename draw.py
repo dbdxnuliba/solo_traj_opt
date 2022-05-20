@@ -66,8 +66,9 @@ def draw(p, R, p_i, f_i, f_len=0.02):
     # note that the y position of the legs are allowed to deviate from 0 by
     # amount eps in the kinematics constraint, so we use something larger here
     # to check if the error is "not close to zero"
-    for leg in legs:
-        assert np.linalg.norm(p_foot_i[leg] - p_i[leg]) < np.sqrt(eps)
+    # for leg in legs:
+    #     assert np.linalg.norm(p_foot_i[leg] - p_i[leg]) < np.sqrt(eps)
+    # TEMPORARY: TURN ASSERTION OFF WHILE DEBUGGING
 
     # draw legs
     for leg in legs:
@@ -107,7 +108,7 @@ def init_fig():
     return anim_fig, ax
 
 
-def animate_traj(XR, dt, fname=None, display=True):
+def animate_traj(XR, dt, fname=None, display=True, repeat=True):
     anim_fig, ax = init_fig()
 
     def draw_frame(t):
@@ -123,7 +124,7 @@ def animate_traj(XR, dt, fname=None, display=True):
         draw_frame,
         frames=N + 1,
         interval=dt * 1000.0,
-        repeat=True,
+        repeat=repeat,
         blit=False,
     )
 
