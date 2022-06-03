@@ -57,10 +57,12 @@ def export_to_csv(X, U, dt, fname):
         # TODO: jacobian transpose calculation from f_i
         tau = np.zeros_like(q)
 
-        traj_t = np.hstack((t, p, quat, pdot, omega, q, qdot, tau))
+        # note the reverse signs in joint variables to make it consistent
+        # with RL and robot control code
+        traj_t = np.hstack((t, p, quat, pdot, omega, -q, -qdot, -tau))
         to_save[k, :] = traj_t
 
-    np.savetxt("csv/" + fname + ".csv", to_save, delimiter=',')
+    np.savetxt("csv/" + fname + ".csv", to_save, delimiter=",")
 
 
 if __name__ == "__main__":
