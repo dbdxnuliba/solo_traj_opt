@@ -37,16 +37,17 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "stand"
+    motion_type = "walk"
 
     if motion_type == "walk":
-        tf = 5.0
+        tf = 16.32
+        # tf = 8.16
     if motion_type == "jump":
         tf = 2.0
     elif motion_type == "stand":
         tf = 5.0
 
-    N = int(tf * 20)
+    N = int(tf * 50)
     dt = tf / (N)
     t_vals = np.linspace(0, tf, N + 1)
 
@@ -55,7 +56,7 @@ def generate_reference():
 
     for k in range(N + 1):
         if motion_type == "walk":
-            body_x = sinusoid(period=2.5, min_val=-0.3, max_val=0.3, t=t_vals[k])
+            body_x = sinusoid(period=8.16, min_val=-0.15, max_val=0.15, t=t_vals[k])
             p = np.array([body_x, 0.0, 0.2])
             R = np.eye(3)
             p_i = {}

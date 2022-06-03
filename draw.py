@@ -128,9 +128,11 @@ def animate_traj(X, U, dt, fname=None, display=True):
     )
 
     if fname is not None:
+        print("saving animation at videos/" + fname + ".mp4...")
         Writer = animation.writers["ffmpeg"]
         writer = Writer(fps=int(1 / dt), metadata=dict(artist="Me"), bitrate=1000)
         anim.save("videos/" + fname + ".mp4", writer=writer)
+        print("finished saving videos/" + fname + ".mp4")
 
     if display:
         plt.show()
