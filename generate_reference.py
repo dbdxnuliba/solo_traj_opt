@@ -64,9 +64,9 @@ def generate_reference():
                 p_i[leg] = B_p_Bi[leg].copy()
                 p_i[leg][0] += body_x
                 if leg == legs.FL or leg == legs.HR:
-                    p_i[leg][2] += max(0.0, sinusoid(0.6, -0.05, 0.05, t_vals[k], 0.0))
+                    p_i[leg][2] += max(0.0, sinusoid(0.48, -0.05, 0.05, t_vals[k], 0.0))
                 else:
-                    p_i[leg][2] += max(0.0, sinusoid(0.6, -0.05, 0.05, t_vals[k], pi))
+                    p_i[leg][2] += max(0.0, sinusoid(0.48, -0.05, 0.05, t_vals[k], pi))
         if motion_type == "jump":
             t_apex = 0.3
             z_apex = np.linalg.norm(g) * t_apex ** 2 / 2.0
