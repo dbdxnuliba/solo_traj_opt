@@ -1,10 +1,12 @@
-from draw import animate_traj
-from generate_reference import generate_reference
-from traj_opt import traj_opt
 import argparse
 from distutils.util import strtobool
 import time
 from datetime import datetime
+
+from draw import animate_traj
+from generate_reference import generate_reference
+from traj_opt import traj_opt
+from export import export_to_csv
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -18,6 +20,13 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--name", help="experiment name", type=str, default=None)
     parser.add_argument(
         "-s", "--save", help="toggle whether to save motion", type=strtobool, default=0
+    )
+    parser.add_argument(
+        "-e",
+        "--export",
+        help="toggle whether to export trajectory to csv",
+        type=strtobool,
+        default=0,
     )
 
     # parse and post processing
@@ -39,6 +48,10 @@ if __name__ == "__main__":
     start_time = time.time()
     X_sol, U_sol = traj_opt(X_ref, U_ref, dt)
     print("\nOptimization took {} minutes".format((time.time() - start_time) / 60.0))
+
+    # optionally export trajectory to csv
+    if args.export:
+        export_to_csv(X_sol, U_sol, dt, args.name)
 
     # optionally display/save solution animation
     if args.save:

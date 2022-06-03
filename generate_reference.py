@@ -40,8 +40,8 @@ def generate_reference():
     motion_type = "walk"
 
     if motion_type == "walk":
-        tf = 16.32
-        # tf = 8.16
+        # tf = 16.32
+        tf = 8.16
     if motion_type == "jump":
         tf = 2.0
     elif motion_type == "stand":
