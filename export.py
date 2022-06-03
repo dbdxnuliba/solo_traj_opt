@@ -60,7 +60,7 @@ def export_to_csv(X, U, dt, fname):
         traj_t = np.hstack((t, p, quat, pdot, omega, q, qdot, tau))
         to_save[k, :] = traj_t
 
-    np.savetxt("csv/" + fname + ".csv", to_save)
+    np.savetxt("csv/" + fname + ".csv", to_save, delimiter=',')
 
 
 if __name__ == "__main__":

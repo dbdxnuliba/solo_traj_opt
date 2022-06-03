@@ -56,7 +56,7 @@ def generate_reference():
 
     for k in range(N + 1):
         if motion_type == "walk":
-            body_x = sinusoid(period=8.16, min_val=-0.15, max_val=0.15, t=t_vals[k])
+            body_x = sinusoid(period=8.16, min_val=-0.3, max_val=0.3, t=t_vals[k])
             p = np.array([body_x, 0.0, 0.2])
             R = np.eye(3)
             p_i = {}
