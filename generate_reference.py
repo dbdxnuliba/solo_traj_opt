@@ -63,7 +63,7 @@ def generate_reference():
             for leg in legs:
                 p_i[leg] = B_p_Bi[leg].copy()
                 p_i[leg][0] += body_x
-                if leg == legs.FL or leg == legs.HR:
+                if leg == legs.FL or leg == legs.FR:
                     p_i[leg][2] += max(0.0, sinusoid(0.48, -0.05, 0.05, t_vals[k], 0.0))
                 else:
                     p_i[leg][2] += max(0.0, sinusoid(0.48, -0.05, 0.05, t_vals[k], pi))
