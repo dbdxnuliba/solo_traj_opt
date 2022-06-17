@@ -37,7 +37,7 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "walk"
+    motion_type = "stand"
 
     if motion_type == "walk":
         # tf = 16.32
