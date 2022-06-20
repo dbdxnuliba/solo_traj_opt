@@ -37,10 +37,10 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "stand"
+    motion_type = "trot"
 
     if motion_type == "trot":
-        tf = 8.16
+        tf = 10.0
     if motion_type == "bound":
         tf = 8.16
     if motion_type == "jump":
@@ -57,17 +57,33 @@ def generate_reference():
 
     for k in range(N + 1):
         if motion_type == "trot":
-            body_x = sinusoid(period=8.16, min_val=-0.3, max_val=0.3, t=t_vals[k])
+            if k * dt < 0.5 or k * dt > 9.5:
+                body_x = -0.3
+            else:
+                body_x = sinusoid(
+                    period=9.0,
+                    min_val=-0.3,
+                    max_val=0.3,
+                    t=t_vals[k],
+                    phase_offset=-2 * np.pi / 9.0 * 0.5,
+                )
             p = np.array([body_x, 0.0, 0.25])
             R = np.eye(3)
             p_i = {}
             for leg in legs:
                 p_i[leg] = B_p_Bi[leg].copy()
                 p_i[leg][0] += body_x
-                if leg == legs.FL or leg == legs.HR:
-                    p_i[leg][2] += max(0.0, sinusoid(0.48, -0.1, 0.1, t_vals[k], 0.0))
+                if k * dt < 0.5 or k * dt > 9.5:
+                    pass
                 else:
-                    p_i[leg][2] += max(0.0, sinusoid(0.48, -0.1, 0.1, t_vals[k], pi))
+                    if leg == legs.FL or leg == legs.HR:
+                        p_i[leg][2] += max(
+                            0.0, sinusoid(0.5, -0.1, 0.1, t_vals[k], pi / 2.0)
+                        )
+                    else:
+                        p_i[leg][2] += max(
+                            0.0, sinusoid(0.5, -0.1, 0.1, t_vals[k], 3.0 * pi / 2.0)
+                        )
         if motion_type == "bound":
             body_x = sinusoid(period=8.16, min_val=-0.3, max_val=0.3, t=t_vals[k])
             p = np.array([body_x, 0.0, 0.25])
@@ -129,4 +145,4 @@ def generate_reference():
 if __name__ == "__main__":
 
     X, U, dt = generate_reference()
-    animate_traj(X, U, dt)
+    animate_traj(X, U, dt, repeat=False)

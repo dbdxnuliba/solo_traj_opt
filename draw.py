@@ -107,7 +107,7 @@ def init_fig():
     return anim_fig, ax
 
 
-def animate_traj(X, U, dt, fname=None, display=True):
+def animate_traj(X, U, dt, fname=None, display=True, repeat=True):
     anim_fig, ax = init_fig()
 
     def draw_frame(k):
@@ -123,7 +123,7 @@ def animate_traj(X, U, dt, fname=None, display=True):
         draw_frame,
         frames=N + 1,
         interval=dt * 1000.0,
-        repeat=True,
+        repeat=repeat,
         blit=False,
     )
 
