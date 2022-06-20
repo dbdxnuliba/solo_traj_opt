@@ -43,7 +43,7 @@ kin_lim = l_thigh + l_calf # used for L1 norm constraint
 
 # LQR weights
 Q_p = np.array([1000.0, 1000.0, 1000.0])
-Q_p_i = np.array([100.0, 100.0, 100.0])
+Q_p_i = np.array([500.0, 500.0, 500.0])
 Q_R = np.array([100.0, 100.0, 100.0])
 Q_pdot = np.array([10.0, 10.0, 10.0])
 Q_omega = np.array([1.0, 1.0, 1.0])
