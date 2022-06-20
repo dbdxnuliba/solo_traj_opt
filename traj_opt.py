@@ -71,7 +71,7 @@ def traj_opt(X_ref, U_ref, dt):
         J += ca.dot(Q_p * error_p, error_p)
         for leg in legs:
             J += ca.dot(Q_p_i * error_p_i[leg], error_p_i[leg])
-        J += weighted_error_R ** 2
+        J += weighted_error_R**2
         J += ca.dot(Q_pdot * error_pdot, error_pdot)
         J += ca.dot(Q_omega * error_omega, error_omega)
         for leg in legs:
@@ -103,12 +103,11 @@ def traj_opt(X_ref, U_ref, dt):
             T_Bi = T_B @ B_T_Bi[leg]
             Bi_T = reverse_homog_ca(T_Bi)
             Bi_p_i = mult_homog_point_ca(Bi_T, p_i[leg])
-            if leg == legs.FL or leg == legs.FR:
-                opti.subject_to(opti.bounded(-x_kin_in_lim, Bi_p_i[0], x_kin_out_lim))
-            else:
-                opti.subject_to(opti.bounded(-x_kin_out_lim, Bi_p_i[0], x_kin_in_lim))
+            # L1 norm constraint in the shoulder plane
+            opti.subject_to(opti.bounded(-kin_lim, Bi_p_i[0] + Bi_p_i[2], kin_lim))
+            opti.subject_to(opti.bounded(-kin_lim, Bi_p_i[0] - Bi_p_i[2], kin_lim))
+            # y position should be on shoulder plane (within some numerical tolerance)
             opti.subject_to(opti.bounded(-eps, Bi_p_i[1], eps))
-            opti.subject_to(opti.bounded(z_kin_lower_lim, Bi_p_i[2], z_kin_upper_lim))
 
         # friction pyramid constraints
         for leg in legs:

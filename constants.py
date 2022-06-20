@@ -39,11 +39,7 @@ B_p_Bi[legs.HR] = np.array([-l_Bx / 2.0, -l_By / 2.0, 0.0])
 eps = 1e-6  # numerical zero threshold
 
 # kinematics constraints paramters
-x_kin_in_lim = l_Bx / 2.0  # half body length to avoid feet collision
-# edge length of largest square that fits within leg workspace
-x_kin_out_lim = (l_thigh + l_calf) / np.sqrt(2)
-z_kin_lower_lim = -(l_thigh + l_calf) / np.sqrt(2)
-z_kin_upper_lim = (l_thigh + l_calf) / np.sqrt(2)
+kin_lim = l_thigh + l_calf # used for L1 norm constraint
 
 # LQR weights
 Q_p = np.array([1000.0, 1000.0, 1000.0])
