@@ -96,10 +96,11 @@ def generate_reference():
                 p_i[leg] = B_p_Bi[leg].copy()
                 p_i[leg][2] += body_z
         elif motion_type == "stand":
+            body_height = 0.2
             angle = cubic_interp_t(
                 [0, 1.6, 2.5, 3.4, tf], [0, 0, np.pi / 2.0, 0, 0], t_vals[k]
             )
-            p = np.array([-l_Bx / 2.0, 0.0, l_thigh])
+            p = np.array([-l_Bx / 2.0, 0.0, body_height])
             p_xz = rot_mat_2d_np(angle) @ np.array([l_Bx / 2.0, 0.0])
             p += np.array([p_xz[0], 0.0, p_xz[1]])
             R = rot_mat_np(np.array([0.0, 1.0, 0.0]), -angle)
@@ -109,7 +110,7 @@ def generate_reference():
                 if leg == legs.FL or leg == legs.FR:
                     p_Bi = mult_homog_point_np(T_B, B_p_Bi[leg])
                     p_i[leg] = p_Bi.copy()
-                    p_i[leg][2] -= l_thigh
+                    p_i[leg][2] -= body_height
                 else:
                     p_i[leg] = B_p_Bi[leg].copy()
 
