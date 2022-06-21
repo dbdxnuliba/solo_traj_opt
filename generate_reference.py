@@ -37,11 +37,13 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "bound"
+    motion_type = "pronk"
 
     if motion_type == "trot":
         tf = 10.0
     if motion_type == "bound":
+        tf = 10.0
+    if motion_type == "pronk":
         tf = 10.0
     if motion_type == "jump":
         tf = 2.0
@@ -112,6 +114,29 @@ def generate_reference():
                         p_i[leg][2] += max(
                             0.0, sinusoid(0.5, -0.1, 0.1, t_vals[k], 3.0 * pi / 2.0)
                         )
+        if motion_type == "pronk":
+            if k * dt < 0.5 or k * dt > 9.5:
+                body_x = -0.3
+            else:
+                body_x = sinusoid(
+                    period=9.0,
+                    min_val=-0.3,
+                    max_val=0.3,
+                    t=t_vals[k],
+                    phase_offset=-2 * np.pi / 9.0 * 0.5,
+                )
+            p = np.array([body_x, 0.0, 0.25])
+            R = np.eye(3)
+            p_i = {}
+            for leg in legs:
+                p_i[leg] = B_p_Bi[leg].copy()
+                p_i[leg][0] += body_x
+                if k * dt < 0.5 or k * dt > 9.5:
+                    pass
+                else:
+                    p_i[leg][2] += max(
+                        0.0, sinusoid(0.5, -0.1, 0.1, t_vals[k], pi / 2.0)
+                    )
         if motion_type == "jump":
             t_apex = 0.3
             z_apex = np.linalg.norm(g) * t_apex**2 / 2.0
