@@ -157,6 +157,19 @@ def planar_IK_np(l1, l2, x, y, elbow_up):
     return th1, th2
 
 
+# generic planar 2 link jacobian transpose calculation implementation
+# joint_torque = jacobian_tranpose * end_effector_force
+def planar_jac_transpose_np(l1, l2, th1, th2, f1, f2):
+    J = np.array(
+        [
+            [-l1 * np.sin(th1) - l2 * np.sin(th1 + th2), -l2 * np.sin(th1 + th2)],
+            [l1 * np.cos(th1) + l2 * np.cos(th1 + th2), l2 * np.cos(th1 + th2)],
+        ]
+    )
+    tau = J.T @ np.array([f1, f2])
+    return tau
+
+
 # Solo specific functions below
 
 # position of corners of robot, in body frame (so it's a constant)
@@ -271,22 +284,61 @@ if __name__ == "__main__":
     #     )
     # )
 
-    print("\ntest homog")
-    homog_ca = derive_homog_ca()
-    p = np.array([1, 2, 3])
-    R = rot_mat_np(x_axis, np.pi / 4)
-    print(homog_np(p, R))
-    print(homog_ca(p, R))
+    # print("\ntest homog")
+    # homog_ca = derive_homog_ca()
+    # p = np.array([1, 2, 3])
+    # R = rot_mat_np(x_axis, np.pi / 4)
+    # print(homog_np(p, R))
+    # print(homog_ca(p, R))
 
-    print("\ntest mult_homog_point")
-    mult_homog_point_ca = derive_mult_homog_point_ca()
-    print(mult_homog_point_np(homog_np(x_axis, R), y_axis))
-    print(mult_homog_point_ca(homog_np(x_axis, R), y_axis))
+    # print("\ntest mult_homog_point")
+    # mult_homog_point_ca = derive_mult_homog_point_ca()
+    # print(mult_homog_point_np(homog_np(x_axis, R), y_axis))
+    # print(mult_homog_point_ca(homog_np(x_axis, R), y_axis))
 
-    print("\ntest mult_homog_vec")
-    mult_homog_vec_ca = derive_mult_homog_vec_ca()
-    print(mult_homog_vec_np(homog_np(x_axis, R), y_axis))
-    print(mult_homog_vec_ca(homog_np(x_axis, R), y_axis))
+    # print("\ntest mult_homog_vec")
+    # mult_homog_vec_ca = derive_mult_homog_vec_ca()
+    # print(mult_homog_vec_np(homog_np(x_axis, R), y_axis))
+    # print(mult_homog_vec_ca(homog_np(x_axis, R), y_axis))
+
+    print("\ntest planar_jac_transpose_np")
+    l1 = l_thigh
+    l2 = l_calf
+    # columns th1, th2, f1, f2
+    test_cases = np.array(
+        [
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, -1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+            [0.0, 0.0, 0.0, -1.0],
+            [0.0, 90.0, 1.0, 0.0],
+            [0.0, 90.0, -1.0, 0.0],
+            [0.0, 90.0, 0.0, 1.0],
+            [0.0, 90.0, 0.0, -1.0],
+            [0.0, 180.0, 1.0, 0.0],
+            [0.0, 180.0, -1.0, 0.0],
+            [0.0, 180.0, 0.0, 1.0],
+            [0.0, 180.0, 0.0, -1.0],
+            [90.0, 0.0, 1.0, 0.0],
+            [90.0, 0.0, -1.0, 0.0],
+            [90.0, 0.0, 0.0, 1.0],
+            [90.0, 0.0, 0.0, -1.0],
+            [-90.0, 0.0, 1.0, 0.0],
+            [-90.0, 0.0, -1.0, 0.0],
+            [-90.0, 0.0, 0.0, 1.0],
+            [-90.0, 0.0, 0.0, -1.0],
+            [0.0, 0.0, 1.0, 1.0],
+        ]
+    )
+
+    test_cases[:, :2] *= np.pi / 180
+    for idx in range(test_cases.shape[0]):
+        th1 = test_cases[idx, 0]
+        th2 = test_cases[idx, 1]
+        f1 = test_cases[idx, 2]
+        f2 = test_cases[idx, 3]
+        tau = planar_jac_transpose_np(l1, l2, th1, th2, f1, f2)
+        print(th1, th2, f1, f2, tau)
 
     # reverse_homog_ca = derive_reverse_homog_ca()
     # T = ca.SX.sym("T", 4, 4)
