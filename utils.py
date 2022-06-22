@@ -235,7 +235,7 @@ def solo_IK_np(p, R, p_i):
         T_Bi = T_B @ B_T_Bi[leg]
         Bi_T = reverse_homog_np(T_Bi)
         Bi_p_i = mult_homog_point_np(Bi_T, p_i[leg])
-        assert abs(Bi_p_i[1]) < eps # foot should be in shoulder plane
+        # assert abs(Bi_p_i[1]) < eps # foot should be in shoulder plane
         x_z = rotate_90 @ np.array([Bi_p_i[0], Bi_p_i[2]])
         if leg == legs.FL or leg == legs.FR:
             q1, q2 = planar_IK_np(l_thigh, l_calf, x_z[0], x_z[1], True)
@@ -256,7 +256,7 @@ def solo_jac_transpose_np(p, R, p_i, f_i):
         T_Bi = T_B @ B_T_Bi[leg]
         Bi_T = reverse_homog_np(T_Bi)
         Bi_f_i = mult_homog_vec_np(Bi_T, f_i[leg])
-        assert abs(Bi_f_i[1]) < eps # ground reaction force should be in shoulder plane
+        # assert abs(Bi_f_i[1]) < eps # ground reaction force should be in shoulder plane
         f_xz = rotate_90 @ np.array([Bi_f_i[0], Bi_f_i[2]])
         tau_i[leg] = planar_jac_transpose_np(
             l_thigh, l_calf, q_i[leg][0], q_i[leg][1], f_xz[0], f_xz[1]

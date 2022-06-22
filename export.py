@@ -3,7 +3,7 @@ from scipy.spatial.transform import Rotation
 
 from constants import *
 from generate_reference import generate_reference
-from utils import extract_state_np, solo_IK_np
+from utils import extract_state_np, solo_IK_np, solo_jac_transpose_np
 
 
 def export_to_csv(X, U, dt, fname):
@@ -55,7 +55,10 @@ def export_to_csv(X, U, dt, fname):
 
         # calculate joint torque tau
         # TODO: jacobian transpose calculation from f_i
-        tau = np.zeros_like(q)
+        tau_i = solo_jac_transpose_np(p, R, p_i, f_i)
+        tau = []
+        for leg in legs:
+            tau = np.hstack((tau, tau_i[leg]))
 
         # note the reverse signs in joint variables to make it consistent
         # with RL and robot control code
