@@ -229,12 +229,13 @@ def flatten_state_np(p, R, pdot, omega, p_i, f_i):
 # inverse kinematics for the solo 8 robot
 def solo_IK_np(p, R, p_i):
     T_B = homog_np(p, R)
+    rotate_90 = rot_mat_2d_np(np.pi / 2.0)
     q_i = {}
     for leg in legs:
         T_Bi = T_B @ B_T_Bi[leg]
         Bi_T = reverse_homog_np(T_Bi)
         Bi_p_i = mult_homog_point_np(Bi_T, p_i[leg])
-        rotate_90 = rot_mat_2d_np(np.pi / 2.0)
+        assert abs(Bi_p_i[1]) < eps # foot should be in shoulder plane
         x_z = rotate_90 @ np.array([Bi_p_i[0], Bi_p_i[2]])
         if leg == legs.FL or leg == legs.FR:
             q1, q2 = planar_IK_np(l_thigh, l_calf, x_z[0], x_z[1], True)
@@ -243,6 +244,25 @@ def solo_IK_np(p, R, p_i):
         q_i[leg] = np.array([q1, q2])
 
     return q_i
+
+
+# jacobian transpose calculation for the solo 8 robot
+def solo_jac_transpose_np(p, R, p_i, f_i):
+    q_i = solo_IK_np(p, R, p_i)
+    T_B = homog_np(p, R)
+    rotate_90 = rot_mat_2d_np(np.pi / 2.0)
+    tau_i = {}
+    for leg in legs:
+        T_Bi = T_B @ B_T_Bi[leg]
+        Bi_T = reverse_homog_np(T_Bi)
+        Bi_f_i = mult_homog_vec_np(Bi_T, f_i[leg])
+        assert abs(Bi_f_i[1]) < eps # ground reaction force should be in shoulder plane
+        f_xz = rotate_90 @ np.array([Bi_f_i[0], Bi_f_i[2]])
+        tau_i[leg] = planar_jac_transpose_np(
+            l_thigh, l_calf, q_i[leg][0], q_i[leg][1], f_xz[0], f_xz[1]
+        )
+
+    return tau_i
 
 
 # test functions
@@ -301,44 +321,44 @@ if __name__ == "__main__":
     # print(mult_homog_vec_np(homog_np(x_axis, R), y_axis))
     # print(mult_homog_vec_ca(homog_np(x_axis, R), y_axis))
 
-    print("\ntest planar_jac_transpose_np")
-    l1 = l_thigh
-    l2 = l_calf
-    # columns th1, th2, f1, f2
-    test_cases = np.array(
-        [
-            [0.0, 0.0, 1.0, 0.0],
-            [0.0, 0.0, -1.0, 0.0],
-            [0.0, 0.0, 0.0, 1.0],
-            [0.0, 0.0, 0.0, -1.0],
-            [0.0, 90.0, 1.0, 0.0],
-            [0.0, 90.0, -1.0, 0.0],
-            [0.0, 90.0, 0.0, 1.0],
-            [0.0, 90.0, 0.0, -1.0],
-            [0.0, 180.0, 1.0, 0.0],
-            [0.0, 180.0, -1.0, 0.0],
-            [0.0, 180.0, 0.0, 1.0],
-            [0.0, 180.0, 0.0, -1.0],
-            [90.0, 0.0, 1.0, 0.0],
-            [90.0, 0.0, -1.0, 0.0],
-            [90.0, 0.0, 0.0, 1.0],
-            [90.0, 0.0, 0.0, -1.0],
-            [-90.0, 0.0, 1.0, 0.0],
-            [-90.0, 0.0, -1.0, 0.0],
-            [-90.0, 0.0, 0.0, 1.0],
-            [-90.0, 0.0, 0.0, -1.0],
-            [0.0, 0.0, 1.0, 1.0],
-        ]
-    )
+    # print("\ntest planar_jac_transpose_np")
+    # l1 = l_thigh
+    # l2 = l_calf
+    # # columns th1, th2, f1, f2
+    # test_cases = np.array(
+    #     [
+    #         [0.0, 0.0, 1.0, 0.0],
+    #         [0.0, 0.0, -1.0, 0.0],
+    #         [0.0, 0.0, 0.0, 1.0],
+    #         [0.0, 0.0, 0.0, -1.0],
+    #         [0.0, 90.0, 1.0, 0.0],
+    #         [0.0, 90.0, -1.0, 0.0],
+    #         [0.0, 90.0, 0.0, 1.0],
+    #         [0.0, 90.0, 0.0, -1.0],
+    #         [0.0, 180.0, 1.0, 0.0],
+    #         [0.0, 180.0, -1.0, 0.0],
+    #         [0.0, 180.0, 0.0, 1.0],
+    #         [0.0, 180.0, 0.0, -1.0],
+    #         [90.0, 0.0, 1.0, 0.0],
+    #         [90.0, 0.0, -1.0, 0.0],
+    #         [90.0, 0.0, 0.0, 1.0],
+    #         [90.0, 0.0, 0.0, -1.0],
+    #         [-90.0, 0.0, 1.0, 0.0],
+    #         [-90.0, 0.0, -1.0, 0.0],
+    #         [-90.0, 0.0, 0.0, 1.0],
+    #         [-90.0, 0.0, 0.0, -1.0],
+    #         [0.0, 0.0, 1.0, 1.0],
+    #     ]
+    # )
 
-    test_cases[:, :2] *= np.pi / 180
-    for idx in range(test_cases.shape[0]):
-        th1 = test_cases[idx, 0]
-        th2 = test_cases[idx, 1]
-        f1 = test_cases[idx, 2]
-        f2 = test_cases[idx, 3]
-        tau = planar_jac_transpose_np(l1, l2, th1, th2, f1, f2)
-        print(th1, th2, f1, f2, tau)
+    # test_cases[:, :2] *= np.pi / 180
+    # for idx in range(test_cases.shape[0]):
+    #     th1 = test_cases[idx, 0]
+    #     th2 = test_cases[idx, 1]
+    #     f1 = test_cases[idx, 2]
+    #     f2 = test_cases[idx, 3]
+    #     tau = planar_jac_transpose_np(l1, l2, th1, th2, f1, f2)
+    #     print(th1, th2, f1, f2, tau)
 
     # reverse_homog_ca = derive_reverse_homog_ca()
     # T = ca.SX.sym("T", 4, 4)

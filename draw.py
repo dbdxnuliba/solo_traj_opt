@@ -62,6 +62,11 @@ def draw(p, R, p_i, f_i, f_len=0.02):
         p_knee_i[leg] = mult_homog_point_np(T_Bi, Bi_p_knee_i)
         p_foot_i[leg] = mult_homog_point_np(T_Bi, Bi_p_foot_i)
 
+    # temp: test jacobian tranpose calculation
+    from utils import solo_jac_transpose_np
+    tau_i = solo_jac_transpose_np(p, R, p_i, f_i)
+    print(tau_i)
+
     # ensure foot positions match the values calculated from IK and FK
     # note that the y position of the legs are allowed to deviate from 0 by
     # amount eps in the kinematics constraint, so we use something larger here
