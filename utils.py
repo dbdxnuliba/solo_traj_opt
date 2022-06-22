@@ -113,20 +113,37 @@ def derive_mult_homog_point_ca():
     return ca.Function("mult_homog_point_ca", [T, p], [mult_homog_point_sym])
 
 
+# multiplication between a 4x4 homogenous transformation matrix and 3x1
+# force vector, returns 3x1 force
+def mult_homog_vec_np(T, f):
+    f_aug = np.concatenate((f, [0.0]))
+    return (T @ f_aug)[:3]
+
+
+# derives a symbolic version of the mult_homog_vec function
+def derive_mult_homog_vec_ca():
+    T = ca.SX.sym("T", 4, 4)
+    f = ca.SX.sym("f", 3)
+    f_aug = ca.SX.zeros(4, 1)
+    f_aug[:3] = f
+    mult_homog_vec_sym = (T @ f_aug)[:3]
+    return ca.Function("mult_homog_vec_ca", [T, f], [mult_homog_vec_sym])
+
+
 # generic planar 2 link inverse kinematics implementation
 # returns the closest point within the workspace if the requested point is
 # outside of it
 def planar_IK_np(l1, l2, x, y, elbow_up):
-    l = np.sqrt(x ** 2.0 + y ** 2.0)
+    l = np.sqrt(x**2.0 + y**2.0)
     l = max(abs(l1 - l2), min(l, l1 + l2))
 
     alpha = np.arctan2(y, x)
 
-    cos_beta = (l ** 2 + l1 ** 2 - l2 ** 2.0) / (2.0 * l * l1)
+    cos_beta = (l**2 + l1**2 - l2**2.0) / (2.0 * l * l1)
     cos_beta = max(-1.0, min(cos_beta, 1.0))
     beta = np.arccos(cos_beta)
 
-    cos_th2_abs = (l ** 2 - l1 ** 2.0 - l2 ** 2.0) / (2.0 * l1 * l2)
+    cos_th2_abs = (l**2 - l1**2.0 - l2**2.0) / (2.0 * l1 * l2)
     cos_th2_abs = max(-1.0, min(cos_th2_abs, 1.0))
     th2_abs = np.arccos(cos_th2_abs)
 
@@ -221,38 +238,38 @@ if __name__ == "__main__":
     y_axis = np.eye(3)[:, 1]
     z_axis = np.eye(3)[:, 2]
 
-    print("\ntest skew")
-    skew_ca = derive_skew_ca()
-    print(skew_np(np.array([1, 2, 3])))
-    print(skew_ca(np.array([1, 2, 3])))
-    s = ca.SX.sym("s", 3)
-    print(skew_ca(s))
+    # print("\ntest skew")
+    # skew_ca = derive_skew_ca()
+    # print(skew_np(np.array([1, 2, 3])))
+    # print(skew_ca(np.array([1, 2, 3])))
+    # s = ca.SX.sym("s", 3)
+    # print(skew_ca(s))
 
-    print("\ntest rotMat")
-    rot_mat_ca = derive_rot_mat_ca()
-    print(rot_mat_np(x_axis, np.pi / 4))
-    print(rot_mat_ca(x_axis, np.pi / 4))
-    print(rot_mat_np(y_axis, np.pi / 4))
-    print(rot_mat_ca(y_axis, np.pi / 4))
-    print(rot_mat_np(z_axis, np.pi / 4))
-    print(rot_mat_ca(z_axis, np.pi / 4))
-    print(
-        np.linalg.norm(
-            rot_mat_np(x_axis, np.pi / 4) @ rot_mat_np(x_axis, np.pi / 4).T - np.eye(3)
-        )
-    )
-    print(
-        np.linalg.norm(
-            rot_mat_np(x_axis, np.pi / 4).T @ rot_mat_np(x_axis, np.pi / 4) - np.eye(3)
-        )
-    )
-    th = ca.SX.sym("th")
-    print(rot_mat_ca(s, th))
-    print(
-        np.linalg.norm(
-            rot_mat_ca(x_axis, np.pi / 4) @ rot_mat_ca(x_axis, np.pi / 4).T - np.eye(3)
-        )
-    )
+    # print("\ntest rotMat")
+    # rot_mat_ca = derive_rot_mat_ca()
+    # print(rot_mat_np(x_axis, np.pi / 4))
+    # print(rot_mat_ca(x_axis, np.pi / 4))
+    # print(rot_mat_np(y_axis, np.pi / 4))
+    # print(rot_mat_ca(y_axis, np.pi / 4))
+    # print(rot_mat_np(z_axis, np.pi / 4))
+    # print(rot_mat_ca(z_axis, np.pi / 4))
+    # print(
+    #     np.linalg.norm(
+    #         rot_mat_np(x_axis, np.pi / 4) @ rot_mat_np(x_axis, np.pi / 4).T - np.eye(3)
+    #     )
+    # )
+    # print(
+    #     np.linalg.norm(
+    #         rot_mat_np(x_axis, np.pi / 4).T @ rot_mat_np(x_axis, np.pi / 4) - np.eye(3)
+    #     )
+    # )
+    # th = ca.SX.sym("th")
+    # print(rot_mat_ca(s, th))
+    # print(
+    #     np.linalg.norm(
+    #         rot_mat_ca(x_axis, np.pi / 4) @ rot_mat_ca(x_axis, np.pi / 4).T - np.eye(3)
+    #     )
+    # )
 
     print("\ntest homog")
     homog_ca = derive_homog_ca()
@@ -266,55 +283,60 @@ if __name__ == "__main__":
     print(mult_homog_point_np(homog_np(x_axis, R), y_axis))
     print(mult_homog_point_ca(homog_np(x_axis, R), y_axis))
 
-    reverse_homog_ca = derive_reverse_homog_ca()
-    T = ca.SX.sym("T", 4, 4)
-    print(reverse_homog_ca(T))
-    T = homog_np(p, R)
-    print(T @ reverse_homog_ca(T))
-    print(reverse_homog_ca(T) @ T)
+    print("\ntest mult_homog_vec")
+    mult_homog_vec_ca = derive_mult_homog_vec_ca()
+    print(mult_homog_vec_np(homog_np(x_axis, R), y_axis))
+    print(mult_homog_vec_ca(homog_np(x_axis, R), y_axis))
 
-    print("\ntest extract_state_ca")
-    X = ca.SX.sym("X", 18, 3)
-    U = ca.SX.sym("U", 24, 3)
-    p, R, pdot, omega, p_i, f_i = extract_state_ca(X, U, 0)
-    print("p:", p)
-    print("R:", R)
-    print("pdot:", pdot)
-    print("omega:", omega)
-    for leg in legs:
-        print("p_i[", leg.value, "]:", p_i[leg])
-        print("f_i[", leg.value, "]:", f_i[leg])
+    # reverse_homog_ca = derive_reverse_homog_ca()
+    # T = ca.SX.sym("T", 4, 4)
+    # print(reverse_homog_ca(T))
+    # T = homog_np(p, R)
+    # print(T @ reverse_homog_ca(T))
+    # print(reverse_homog_ca(T) @ T)
 
-    print("\ntest flatten_state_np")
-    p = np.array([1.0, 2.0, 3.0])
-    R = rot_mat_np(np.array([0, 1, 0]), np.pi / 4.0)
-    pdot = np.array([0.4, 0.5, 0.6])
-    omega = np.array([3, 4, 5])
-    p_i = {}
-    f_i = {}
-    for leg in legs:
-        p_i[leg] = leg.value + np.array([0.7, 0.8, 0.9])
-        f_i[leg] = leg.value + np.array([0.07, 0.08, 0.09])
+    # print("\ntest extract_state_ca")
+    # X = ca.SX.sym("X", 18, 3)
+    # U = ca.SX.sym("U", 24, 3)
+    # p, R, pdot, omega, p_i, f_i = extract_state_ca(X, U, 0)
+    # print("p:", p)
+    # print("R:", R)
+    # print("pdot:", pdot)
+    # print("omega:", omega)
+    # for leg in legs:
+    #     print("p_i[", leg.value, "]:", p_i[leg])
+    #     print("f_i[", leg.value, "]:", f_i[leg])
 
-    X_k, U_k = flatten_state_np(p, R, pdot, omega, p_i, f_i)
-    print(X_k)
-    print(U_k)
+    # print("\ntest flatten_state_np")
+    # p = np.array([1.0, 2.0, 3.0])
+    # R = rot_mat_np(np.array([0, 1, 0]), np.pi / 4.0)
+    # pdot = np.array([0.4, 0.5, 0.6])
+    # omega = np.array([3, 4, 5])
+    # p_i = {}
+    # f_i = {}
+    # for leg in legs:
+    #     p_i[leg] = leg.value + np.array([0.7, 0.8, 0.9])
+    #     f_i[leg] = leg.value + np.array([0.07, 0.08, 0.09])
 
-    print("\ntest extract_state_np")
-    (
-        p_extracted,
-        R_extracted,
-        pdot_extracted,
-        omega_extracted,
-        p_i_extracted,
-        f_i_extracted,
-    ) = extract_state_np(X_k[:, np.newaxis], U_k[:, np.newaxis], 0)
-    print("p_extracted", p_extracted)
-    print("R_extracted", R_extracted)
-    print("pdot_extracted", pdot_extracted)
-    print("omega_extracted", omega_extracted)
-    print("p_i_extracted", p_i_extracted)
-    print("f_i_extracted", f_i_extracted)
+    # X_k, U_k = flatten_state_np(p, R, pdot, omega, p_i, f_i)
+    # print(X_k)
+    # print(U_k)
+
+    # print("\ntest extract_state_np")
+    # (
+    #     p_extracted,
+    #     R_extracted,
+    #     pdot_extracted,
+    #     omega_extracted,
+    #     p_i_extracted,
+    #     f_i_extracted,
+    # ) = extract_state_np(X_k[:, np.newaxis], U_k[:, np.newaxis], 0)
+    # print("p_extracted", p_extracted)
+    # print("R_extracted", R_extracted)
+    # print("pdot_extracted", pdot_extracted)
+    # print("omega_extracted", omega_extracted)
+    # print("p_i_extracted", p_i_extracted)
+    # print("f_i_extracted", f_i_extracted)
 
     import ipdb
 
