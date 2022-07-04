@@ -37,8 +37,12 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "stand"
+    motion_type = "squat"
 
+    if motion_type == "stand":
+        tf = 10.0
+    if motion_type == "squat":
+        tf = 10.0
     if motion_type == "trot":
         tf = 10.0
     if motion_type == "bound":
@@ -47,7 +51,7 @@ def generate_reference():
         tf = 10.0
     if motion_type == "jump":
         tf = 2.0
-    elif motion_type == "stand":
+    elif motion_type == "half_cartwheel":
         tf = 5.0
     elif motion_type == "front-hop":
         tf = 5.0
@@ -60,6 +64,28 @@ def generate_reference():
     U = np.zeros((24, N + 1))
 
     for k in range(N + 1):
+        if motion_type == "stand":
+            p = np.array([0.0, 0.0, 0.225])
+            R = np.eye(3)
+            p_i = {}
+            for leg in legs:
+                p_i[leg] = B_p_Bi[leg].copy()
+        if motion_type == "squat":
+            if k * dt < 0.5 or k * dt > 9.5:
+                body_z = 0.2
+            else:
+                body_z = sinusoid(
+                    period=1.0,
+                    min_val=0.15,
+                    max_val=0.25,
+                    t=t_vals[k],
+                    phase_offset=np.pi * 0.5,
+                )
+            p = np.array([0.0, 0.0, body_z])
+            R = np.eye(3)
+            p_i = {}
+            for leg in legs:
+                p_i[leg] = B_p_Bi[leg].copy()
         if motion_type == "trot":
             if k * dt < 0.5 or k * dt > 9.5:
                 body_x = -0.3
@@ -154,7 +180,7 @@ def generate_reference():
             for leg in legs:
                 p_i[leg] = B_p_Bi[leg].copy()
                 p_i[leg][2] += body_z
-        elif motion_type == "stand":
+        elif motion_type == "half_cartwheel":
             body_height = 0.2
             angle = cubic_interp_t(
                 [0, 1.6, 2.5, 3.4, tf], [0, 0, np.pi / 2.0, 0, 0], t_vals[k]
