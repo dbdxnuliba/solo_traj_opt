@@ -66,23 +66,10 @@ def generate_reference():
     for k in range(N + 1):
         if motion_type == "stand":
             p = np.array([0.0, 0.0, 0.225])
-            # TEMP
-            # p = np.array([0.0, 0.0, l_calf + l_thigh - 0.001])
-            # p = np.array([0.0, 0.0, 0.05])
-            # p = np.array([0.0, 0.0, 0.01])
-            # END TEMP
             R = np.eye(3)
             p_i = {}
             for leg in legs:
                 p_i[leg] = B_p_Bi[leg].copy()
-                # TEMP
-                if leg == legs.FL or leg == legs.FR:
-                    # p_i[leg][0] += l_calf + l_thigh - 0.01
-                    p_i[leg][0] += 0.05
-                else:
-                    # p_i[leg][0] -= l_calf + l_thigh - 0.01
-                    p_i[leg][0] -= 0.05
-                # END TEMP
         if motion_type == "squat":
             if k * dt < 0.5 or k * dt > 9.5:
                 body_z = 0.2
