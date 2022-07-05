@@ -159,6 +159,7 @@ def planar_IK_np(l1, l2, x, y, elbow_up):
 
 # generic planar 2 link jacobian transpose calculation implementation
 # joint_torque = jacobian_tranpose * end_effector_force
+# end_effector_force is force that robot exerts on environment
 def planar_jac_transpose_np(l1, l2, th1, th2, f1, f2):
     J = np.array(
         [
@@ -255,7 +256,9 @@ def solo_jac_transpose_np(p, R, p_i, f_i):
     for leg in legs:
         T_Bi = T_B @ B_T_Bi[leg]
         Bi_T = reverse_homog_np(T_Bi)
-        Bi_f_i = mult_homog_vec_np(Bi_T, f_i[leg])
+        # NOTE: ground reaction force needs to be negated to get force from robot to ground,
+        # not from ground to robot
+        Bi_f_i = mult_homog_vec_np(Bi_T, -f_i[leg]) # note negative sign
         # assert abs(Bi_f_i[1]) < eps # ground reaction force should be in shoulder plane
         f_xz = rotate_90 @ np.array([Bi_f_i[0], Bi_f_i[2]])
         tau_i[leg] = planar_jac_transpose_np(
