@@ -157,6 +157,19 @@ def planar_IK_np(l1, l2, x, y, elbow_up):
     return th1, th2
 
 
+# generic planar 2 link jacobian inverse transpose calculation implementation
+# end_effector_force = jacobian_inv_tranpose * joint_torque
+def planar_jac_inv_transpose_np(l1, l2, th1, th2, tau1, tau2):
+    J = np.array(
+        [
+            [-l1 * np.sin(th1) - l2 * np.sin(th1 + th2), -l2 * np.sin(th1 + th2)],
+            [l1 * np.cos(th1) + l2 * np.cos(th1 + th2), l2 * np.cos(th1 + th2)],
+        ]
+    )
+    force = np.linalg.solve(J.T, np.array([tau1, tau2]))
+    return force
+
+
 # generic planar 2 link jacobian transpose calculation implementation
 # joint_torque = jacobian_tranpose * end_effector_force
 # end_effector_force is force that robot exerts on environment
@@ -266,6 +279,24 @@ def solo_jac_transpose_np(p, R, p_i, f_i):
         )
 
     return tau_i
+
+
+# jacobian inverse transpose calculation for the solo 8 robot
+def solo_jac_inv_transpose_np(p, R, p_i, tau_i):
+    q_i = solo_IK_np(p, R, p_i)
+    T_B = homog_np(p, R)
+    rotate_neg_90 = rot_mat_2d_np(-np.pi / 2.0)
+    f_i = {}
+    for leg in legs:
+        T_Bi = T_B @ B_T_Bi[leg]
+        f_xz = planar_jac_inv_transpose_np(
+            l_thigh, l_calf, q_i[leg][0], q_i[leg][1], tau_i[leg][0], tau_i[leg][1]
+        )
+        Bi_f_i = rotate_neg_90 @ f_xz
+        # note negative sign to convert force from robot to force from ground
+        f_i[leg] = -mult_homog_vec_np(T_Bi, np.array([Bi_f_i[0], 0.0, Bi_f_i[1]]))
+
+    return f_i
 
 
 # test functions
