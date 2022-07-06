@@ -3,8 +3,7 @@ from scipy.spatial.transform import Rotation
 
 from constants import *
 from generate_reference import generate_reference
-from utils import *  # TEMP
-# from utils import extract_state_np, solo_IK_np, solo_jac_transpose_np
+from utils import extract_state_np, solo_IK_np, solo_jac_transpose_np
 
 
 def export_to_csv(X, U, dt, fname):
@@ -60,19 +59,6 @@ def export_to_csv(X, U, dt, fname):
         tau = []
         for leg in legs:
             tau = np.hstack((tau, tau_i[leg]))
-
-        # TEMP: test solo_jac_inv_tranpose
-        f_i_jac_inv = solo_jac_inv_transpose_np(p, R, p_i, tau_i)
-        T_B = homog_np(p, R)
-        for leg in legs:
-            T_Bi = T_B @ B_T_Bi[leg]
-            Bi_T = reverse_homog_np(T_Bi)
-            Bi_f_i = mult_homog_vec_np(Bi_T, f_i[leg])
-            # f_xz is f_i but with component along y axis of T_Bi frame removed
-            f_xz = mult_homog_vec_np(T_Bi, np.array([Bi_f_i[0], 0.0, Bi_f_i[2]]))
-            error = np.linalg.norm(f_xz - f_i_jac_inv[leg])
-            print(error)
-        # END TEMP: test solo_jac_inv_tranpose
 
         # note the reverse signs in joint variables to make it consistent
         # with RL and robot control code
