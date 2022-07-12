@@ -38,8 +38,9 @@ B_p_Bi[legs.HR] = np.array([-l_Bx / 2.0, -l_By / 2.0, 0.0])
 # global optimization paramters
 eps = 1e-6  # numerical zero threshold
 
-# kinematics constraints paramters
-kin_lim = l_thigh + l_calf # used for L1 norm constraint
+# limit constraint paramters
+kin_lim = l_thigh + l_calf  # used for L1 norm kinematic constraint
+f_lim = 20.0  # max vertical force in newtons
 
 # LQR weights
 Q_p = np.array([1000.0, 1000.0, 1000.0])

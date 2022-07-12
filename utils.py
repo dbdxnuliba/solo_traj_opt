@@ -444,6 +444,13 @@ if __name__ == "__main__":
     # print("p_i_extracted", p_i_extracted)
     # print("f_i_extracted", f_i_extracted)
 
+    # calculation used to find suitable value for vertical force upper limit
+    force_limit = planar_jac_inv_transpose_np(l_thigh, l_calf, np.pi/4.0, np.pi/2.0, -2.0, 2.0)
+    print(force_limit)
+
+    torque_limit = planar_jac_transpose_np(l_thigh, l_calf, np.pi/4.0, np.pi/2.0, 0.0, 20.0)
+    print(torque_limit)
+
     import ipdb
 
     ipdb.set_trace()

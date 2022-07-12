@@ -111,7 +111,7 @@ def traj_opt(X_ref, U_ref, dt):
 
         # friction pyramid constraints
         for leg in legs:
-            opti.subject_to(f_i[leg][2] >= 0.0)
+            opti.subject_to(opti.bounded(0.0, f_i[leg][2], f_lim))
             opti.subject_to(
                 opti.bounded(-mu * f_i[leg][2], f_i[leg][0], mu * f_i[leg][2])
             )
