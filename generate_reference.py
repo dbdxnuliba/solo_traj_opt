@@ -37,7 +37,7 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "front-hop"
+    motion_type = "180-backflip"
 
     if motion_type == "stand":
         tf = 10.0
@@ -55,6 +55,8 @@ def generate_reference():
         tf = 5.0
     elif motion_type == "front-hop":
         tf = 5.0
+    elif motion_type == "180-backflip":
+        tf = 5.0
 
     N = int(tf * 50)
     dt = tf / (N)
@@ -70,6 +72,8 @@ def generate_reference():
             p_i = {}
             for leg in legs:
                 p_i[leg] = B_p_Bi[leg].copy()
+            elbow_up_front = True
+            elbow_up_hind = False
         if motion_type == "squat":
             if k * dt < 0.5 or k * dt > 9.5:
                 body_z = 0.2
@@ -86,6 +90,8 @@ def generate_reference():
             p_i = {}
             for leg in legs:
                 p_i[leg] = B_p_Bi[leg].copy()
+            elbow_up_front = True
+            elbow_up_hind = False
         if motion_type == "trot":
             if k * dt < 0.5 or k * dt > 9.5:
                 body_x = -0.3
@@ -114,6 +120,8 @@ def generate_reference():
                         p_i[leg][2] += max(
                             0.0, sinusoid(0.5, -0.1, 0.1, t_vals[k], 3.0 * pi / 2.0)
                         )
+            elbow_up_front = True
+            elbow_up_hind = False
         if motion_type == "bound":
             if k * dt < 0.5 or k * dt > 9.5:
                 body_x = -0.3
@@ -142,6 +150,8 @@ def generate_reference():
                         p_i[leg][2] += max(
                             0.0, sinusoid(0.5, -0.1, 0.1, t_vals[k], 3.0 * pi / 2.0)
                         )
+            elbow_up_front = True
+            elbow_up_hind = False
         if motion_type == "pronk":
             if k * dt < 0.5 or k * dt > 9.5:
                 body_x = -0.3
@@ -165,6 +175,8 @@ def generate_reference():
                     p_i[leg][2] += max(
                         0.0, sinusoid(0.5, -0.1, 0.1, t_vals[k], pi / 2.0)
                     )
+            elbow_up_front = True
+            elbow_up_hind = False
         if motion_type == "jump":
             t_apex = 0.3
             z_apex = np.linalg.norm(g) * t_apex**2 / 2.0
@@ -180,6 +192,8 @@ def generate_reference():
             for leg in legs:
                 p_i[leg] = B_p_Bi[leg].copy()
                 p_i[leg][2] += body_z
+            elbow_up_front = True
+            elbow_up_hind = False
         elif motion_type == "half_cartwheel":
             body_height = 0.2
             angle = cubic_interp_t(
@@ -198,6 +212,8 @@ def generate_reference():
                     p_i[leg][2] -= body_height
                 else:
                     p_i[leg] = B_p_Bi[leg].copy()
+            elbow_up_front = True
+            elbow_up_hind = False
         elif motion_type == "front-hop":
             body_height = 0.2
             angle = cubic_interp_t(
@@ -216,6 +232,28 @@ def generate_reference():
                     p_i[leg][2] -= body_height
                 else:
                     p_i[leg] = B_p_Bi[leg].copy()
+            elbow_up_front = True
+            elbow_up_hind = False
+        elif motion_type == "180-backflip":
+            body_height = 0.2
+            angle = cubic_interp_t(
+                [0, 1.6, 2.5, 3.4, tf], [0, 0, np.pi / 2.0, np.pi, np.pi], t_vals[k]
+            )
+            p = np.array([-l_Bx / 2.0, 0.0, body_height])
+            p_xz = rot_mat_2d_np(angle) @ np.array([l_Bx / 2.0, 0.0])
+            p += np.array([p_xz[0], 0.0, p_xz[1]])
+            R = rot_mat_np(np.array([0.0, 1.0, 0.0]), -angle)
+            p_i = {}
+            T_B = homog_np(p, R)
+            for leg in legs:
+                if leg == legs.FL or leg == legs.FR:
+                    p_Bi = mult_homog_point_np(T_B, B_p_Bi[leg])
+                    p_i[leg] = p_Bi.copy()
+                    p_i[leg][2] -= body_height
+                else:
+                    p_i[leg] = B_p_Bi[leg].copy()
+            elbow_up_front = True
+            elbow_up_hind = True
 
         pdot = np.array([0.0, 0.0, 0.0])
         omega = np.array([0.0, 0.0, 0.0])
@@ -226,10 +264,17 @@ def generate_reference():
                 f_i[leg][2] = m * np.linalg.norm(g) / 4.0
         X[:, k], U[:, k] = flatten_state_np(p, R, pdot, omega, p_i, f_i)
 
-    return X, U, dt
+    return X, U, dt, elbow_up_front, elbow_up_hind
 
 
 if __name__ == "__main__":
 
-    X, U, dt = generate_reference()
-    animate_traj(X, U, dt, repeat=False)
+    X, U, dt, elbow_up_front, elbow_up_hind = generate_reference()
+    animate_traj(
+        X,
+        U,
+        dt,
+        repeat=False,
+        elbow_up_front=elbow_up_front,
+        elbow_up_hind=elbow_up_hind,
+    )

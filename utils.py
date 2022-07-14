@@ -241,7 +241,7 @@ def flatten_state_np(p, R, pdot, omega, p_i, f_i):
 
 
 # inverse kinematics for the solo 8 robot
-def solo_IK_np(p, R, p_i):
+def solo_IK_np(p, R, p_i, elbow_up_front=True, elbow_up_hind=False):
     T_B = homog_np(p, R)
     rotate_90 = rot_mat_2d_np(np.pi / 2.0)
     q_i = {}
@@ -252,17 +252,17 @@ def solo_IK_np(p, R, p_i):
         # assert abs(Bi_p_i[1]) < eps # foot should be in shoulder plane
         x_z = rotate_90 @ np.array([Bi_p_i[0], Bi_p_i[2]])
         if leg == legs.FL or leg == legs.FR:
-            q1, q2 = planar_IK_np(l_thigh, l_calf, x_z[0], x_z[1], True)
+            q1, q2 = planar_IK_np(l_thigh, l_calf, x_z[0], x_z[1], elbow_up_front)
         else:
-            q1, q2 = planar_IK_np(l_thigh, l_calf, x_z[0], x_z[1], False)
+            q1, q2 = planar_IK_np(l_thigh, l_calf, x_z[0], x_z[1], elbow_up_hind)
         q_i[leg] = np.array([q1, q2])
 
     return q_i
 
 
 # jacobian transpose calculation for the solo 8 robot
-def solo_jac_transpose_np(p, R, p_i, f_i):
-    q_i = solo_IK_np(p, R, p_i)
+def solo_jac_transpose_np(p, R, p_i, f_i, elbow_up_front=True, elbow_up_hind=False):
+    q_i = solo_IK_np(p, R, p_i, elbow_up_front, elbow_up_hind)
     T_B = homog_np(p, R)
     rotate_90 = rot_mat_2d_np(np.pi / 2.0)
     tau_i = {}
@@ -271,7 +271,7 @@ def solo_jac_transpose_np(p, R, p_i, f_i):
         Bi_T = reverse_homog_np(T_Bi)
         # NOTE: ground reaction force needs to be negated to get force from robot to ground,
         # not from ground to robot
-        Bi_f_i = mult_homog_vec_np(Bi_T, -f_i[leg]) # note negative sign
+        Bi_f_i = mult_homog_vec_np(Bi_T, -f_i[leg])  # note negative sign
         # assert abs(Bi_f_i[1]) < eps # ground reaction force should be in shoulder plane
         f_xz = rotate_90 @ np.array([Bi_f_i[0], Bi_f_i[2]])
         tau_i[leg] = planar_jac_transpose_np(
@@ -445,10 +445,14 @@ if __name__ == "__main__":
     # print("f_i_extracted", f_i_extracted)
 
     # calculation used to find suitable value for vertical force upper limit
-    force_limit = planar_jac_inv_transpose_np(l_thigh, l_calf, np.pi/4.0, np.pi/2.0, -2.0, 2.0)
+    force_limit = planar_jac_inv_transpose_np(
+        l_thigh, l_calf, np.pi / 4.0, np.pi / 2.0, -2.0, 2.0
+    )
     print(force_limit)
 
-    torque_limit = planar_jac_transpose_np(l_thigh, l_calf, np.pi/4.0, np.pi/2.0, 0.0, 20.0)
+    torque_limit = planar_jac_transpose_np(
+        l_thigh, l_calf, np.pi / 4.0, np.pi / 2.0, 0.0, 20.0
+    )
     print(torque_limit)
 
     import ipdb

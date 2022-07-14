@@ -31,7 +31,7 @@ def draw_T(T):
         line.set_color(axis_colors[axis])
 
 
-def draw(p, R, p_i, f_i, f_len=0.02):
+def draw(p, R, p_i, f_i, f_len=0.02, elbow_up_front=True, elbow_up_hind=False):
     T_B = homog_np(p, R)
     p_Bi = {}
     for leg in legs:
@@ -48,7 +48,7 @@ def draw(p, R, p_i, f_i, f_len=0.02):
     line.set_marker("o")
 
     # inverse and forward kinematics to extract knee location
-    q_i = solo_IK_np(p, R, p_i)
+    q_i = solo_IK_np(p, R, p_i, elbow_up_front, elbow_up_hind)
     p_knee_i = {}
     p_foot_i = {}
     for leg in legs:
@@ -107,14 +107,23 @@ def init_fig():
     return anim_fig, ax
 
 
-def animate_traj(X, U, dt, fname=None, display=True, repeat=True):
+def animate_traj(
+    X,
+    U,
+    dt,
+    fname=None,
+    display=True,
+    repeat=True,
+    elbow_up_front=True,
+    elbow_up_hind=False,
+):
     anim_fig, ax = init_fig()
 
     def draw_frame(k):
         p, R, pdot, omega, p_i, f_i = extract_state_np(X, U, k)
         while ax.lines:
             ax.lines.pop()
-        draw(p, R, p_i, f_i)
+        draw(p, R, p_i, f_i, elbow_up_front=elbow_up_front, elbow_up_hind=elbow_up_hind)
 
     N = X.shape[1] - 1
 
