@@ -37,7 +37,7 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "180-backflip"
+    motion_type = "180-frontflip"
 
     if motion_type == "stand":
         tf = 10.0
@@ -56,6 +56,8 @@ def generate_reference():
     elif motion_type == "front-hop":
         tf = 5.0
     elif motion_type == "180-backflip":
+        tf = 5.0
+    elif motion_type == "180-frontflip":
         tf = 5.0
 
     N = int(tf * 50)
@@ -245,6 +247,27 @@ def generate_reference():
             T_B = homog_np(p, R)
             for leg in legs:
                 if leg == legs.FL or leg == legs.FR:
+                    p_Bi = mult_homog_point_np(T_B, B_p_Bi[leg])
+                    p_i[leg] = p_Bi.copy()
+                    # p_i[leg][2] -= body_height
+                    p_i[leg][0:3:2] += rot_mat_2d_np(2.0 * angle) @ np.array(
+                        [0.0, -body_height]
+                    )
+                else:
+                    p_i[leg] = B_p_Bi[leg].copy()
+            elbow_up_front = True
+            elbow_up_hind = True
+        elif motion_type == "180-frontflip":
+            body_height = 0.2
+            angle = cubic_interp_t([0, 2.0, 3.2, tf], [0, 0, -np.pi, -np.pi], t_vals[k])
+            p = np.array([l_Bx / 2.0, 0.0, body_height])
+            p_xz = rot_mat_2d_np(angle) @ np.array([-l_Bx / 2.0, 0.0])
+            p += np.array([p_xz[0], 0.0, p_xz[1]])
+            R = rot_mat_np(np.array([0.0, 1.0, 0.0]), -angle)
+            p_i = {}
+            T_B = homog_np(p, R)
+            for leg in legs:
+                if leg == legs.HL or leg == legs.HR:
                     p_Bi = mult_homog_point_np(T_B, B_p_Bi[leg])
                     p_i[leg] = p_Bi.copy()
                     # p_i[leg][2] -= body_height
