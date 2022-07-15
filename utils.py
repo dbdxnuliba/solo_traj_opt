@@ -281,22 +281,24 @@ def solo_jac_transpose_np(p, R, p_i, f_i, elbow_up_front=True, elbow_up_hind=Fal
     return tau_i
 
 
-# jacobian inverse transpose calculation for the solo 8 robot
-def solo_jac_inv_transpose_np(p, R, p_i, tau_i):
-    q_i = solo_IK_np(p, R, p_i)
-    T_B = homog_np(p, R)
-    rotate_neg_90 = rot_mat_2d_np(-np.pi / 2.0)
-    f_i = {}
-    for leg in legs:
-        T_Bi = T_B @ B_T_Bi[leg]
-        f_xz = planar_jac_inv_transpose_np(
-            l_thigh, l_calf, q_i[leg][0], q_i[leg][1], tau_i[leg][0], tau_i[leg][1]
-        )
-        Bi_f_i = rotate_neg_90 @ f_xz
-        # note negative sign to convert force from robot to force from ground
-        f_i[leg] = -mult_homog_vec_np(T_Bi, np.array([Bi_f_i[0], 0.0, Bi_f_i[1]]))
+# function commented out since it wasn't updated to account for various knee
+# configurations and it isn't used anywhere
+# # jacobian inverse transpose calculation for the solo 8 robot
+# def solo_jac_inv_transpose_np(p, R, p_i, tau_i):
+#     q_i = solo_IK_np(p, R, p_i)
+#     T_B = homog_np(p, R)
+#     rotate_neg_90 = rot_mat_2d_np(-np.pi / 2.0)
+#     f_i = {}
+#     for leg in legs:
+#         T_Bi = T_B @ B_T_Bi[leg]
+#         f_xz = planar_jac_inv_transpose_np(
+#             l_thigh, l_calf, q_i[leg][0], q_i[leg][1], tau_i[leg][0], tau_i[leg][1]
+#         )
+#         Bi_f_i = rotate_neg_90 @ f_xz
+#         # note negative sign to convert force from robot to force from ground
+#         f_i[leg] = -mult_homog_vec_np(T_Bi, np.array([Bi_f_i[0], 0.0, Bi_f_i[1]]))
 
-    return f_i
+#     return f_i
 
 
 # test functions
