@@ -284,35 +284,46 @@ def generate_reference():
         if motion_type == "backflip":
             t_apex = 0.3
             z_apex = np.linalg.norm(g) * t_apex**2 / 2.0
-            body_z = cubic_interp_t(
-                [0, 0.2 * tf, 0.2 * tf + t_apex, 0.2 * tf + 2 * t_apex, tf],
-                [0, 0, z_apex, 0, 0],
+            body_z = linear_interp_t(
+                [0.0, 1.4, 2.0, 2.0 + t_apex, 2.0 + 2 * t_apex, tf],
+                [0.0, 0.0, l_Bx / 2.0, l_Bx / 2.0 + z_apex, l_Bx / 2.0, l_Bx / 2.0],
                 t_vals[k],
             )
-            body_x = cubic_interp_t(
-                [0, 0.2 * tf, 0.2 * tf + 2 * t_apex, tf],
-                [0, 0, -0.5, -0.5],
+            body_x = linear_interp_t(
+                [0.0, 1.4, 2.0, 2.0 + 2 * t_apex, tf],
+                [0.0, 0.0, -l_Bx / 2.0, -3.0 / 2.0 * l_Bx, -3.0 / 2.0 * l_Bx],
                 t_vals[k],
             )
-            angle = cubic_interp_t(
-                [0, 0.2 * tf, 0.2 * tf + 2 * t_apex, tf],
-                [np.pi / 2.0, np.pi / 2.0, 3.0 / 2.0 * np.pi, 3.0 / 2.0 * np.pi],
+            angle = linear_interp_t(
+                [0, 1.4, 2.0, 2.0 + 2 * t_apex, tf],
+                [0.0, 0.0, np.pi / 2.0, 3.0 / 2.0 * np.pi, 3.0 / 2.0 * np.pi],
                 t_vals[k],
             )
             p = np.array([0.0, 0.0, 0.2])
             p[0] += body_x
-            p[2] += body_z + l_Bx / 2.0
+            p[2] += body_z
             R = rot_mat_np(np.array([0.0, 1.0, 0.0]), -angle)
             p_i = {}
             T_B = homog_np(p, R)
-            for leg in legs:
-                B_T_Bi_leg = B_T_Bi[leg].copy()
-                if leg == legs.FR or leg == legs.FL:
-                    B_T_Bi_leg[0, 3] += 0.2
-                else:
-                    B_T_Bi_leg[0, 3] -= 0.2
-                T_B_i = T_B @ B_T_Bi_leg
-                p_i[leg] = T_B_i[0:3, 3]
+            if t_vals[k] < 2.0:
+                for leg in legs:
+                    if leg == legs.FL or leg == legs.FR:
+                        p_Bi = mult_homog_point_np(T_B, B_p_Bi[leg])
+                        p_i[leg] = p_Bi.copy()
+                        p_i[leg][0:3:2] += rot_mat_2d_np(2.0 * angle) @ np.array(
+                            [0.0, -0.2]
+                        )
+                    else:
+                        p_i[leg] = B_p_Bi[leg].copy()
+            else:
+                for leg in legs:
+                    B_T_Bi_leg = B_T_Bi[leg].copy()
+                    if leg == legs.FR or leg == legs.FL:
+                        B_T_Bi_leg[0, 3] += 0.2
+                    else:
+                        B_T_Bi_leg[0, 3] -= 0.2
+                    T_B_i = T_B @ B_T_Bi_leg
+                    p_i[leg] = T_B_i[0:3, 3]
             elbow_up_front = True
             elbow_up_hind = True
 
