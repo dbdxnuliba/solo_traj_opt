@@ -1,6 +1,7 @@
 from constants import *
 from draw import animate_traj
 from utils import (
+    B_T_Bi,
     legs,
     mult_homog_point_np,
     rot_mat_2d_np,
@@ -37,7 +38,7 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "180-frontflip"
+    motion_type = "backflip"
 
     if motion_type == "stand":
         tf = 10.0
@@ -58,6 +59,8 @@ def generate_reference():
     elif motion_type == "180-backflip":
         tf = 5.0
     elif motion_type == "180-frontflip":
+        tf = 5.0
+    if motion_type == "backflip":
         tf = 5.0
 
     N = int(tf * 50)
@@ -276,6 +279,40 @@ def generate_reference():
                     )
                 else:
                     p_i[leg] = B_p_Bi[leg].copy()
+            elbow_up_front = True
+            elbow_up_hind = True
+        if motion_type == "backflip":
+            t_apex = 0.3
+            z_apex = np.linalg.norm(g) * t_apex**2 / 2.0
+            body_z = cubic_interp_t(
+                [0, 0.2 * tf, 0.2 * tf + t_apex, 0.2 * tf + 2 * t_apex, tf],
+                [0, 0, z_apex, 0, 0],
+                t_vals[k],
+            )
+            body_x = cubic_interp_t(
+                [0, 0.2 * tf, 0.2 * tf + 2 * t_apex, tf],
+                [0, 0, -0.5, -0.5],
+                t_vals[k],
+            )
+            angle = cubic_interp_t(
+                [0, 0.2 * tf, 0.2 * tf + 2 * t_apex, tf],
+                [np.pi / 2.0, np.pi / 2.0, 3.0 / 2.0 * np.pi, 3.0 / 2.0 * np.pi],
+                t_vals[k],
+            )
+            p = np.array([0.0, 0.0, 0.2])
+            p[0] += body_x
+            p[2] += body_z + l_Bx / 2.0
+            R = rot_mat_np(np.array([0.0, 1.0, 0.0]), -angle)
+            p_i = {}
+            T_B = homog_np(p, R)
+            for leg in legs:
+                B_T_Bi_leg = B_T_Bi[leg].copy()
+                if leg == legs.FR or leg == legs.FL:
+                    B_T_Bi_leg[0, 3] += 0.2
+                else:
+                    B_T_Bi_leg[0, 3] -= 0.2
+                T_B_i = T_B @ B_T_Bi_leg
+                p_i[leg] = T_B_i[0:3, 3]
             elbow_up_front = True
             elbow_up_hind = True
 
