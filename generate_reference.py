@@ -282,21 +282,29 @@ def generate_reference():
             elbow_up_front = True
             elbow_up_hind = True
         if motion_type == "backflip":
-            t_apex = 0.3
+            t_apex = 0.2
             z_apex = np.linalg.norm(g) * t_apex**2 / 2.0
             body_z = linear_interp_t(
-                [0.0, 1.4, 2.0, 2.0 + t_apex, 2.0 + 2 * t_apex, tf],
-                [0.0, 0.0, l_Bx / 2.0, l_Bx / 2.0 + z_apex, l_Bx / 2.0, l_Bx / 2.0],
+                [
+                    0.0,
+                    1.6,
+                    2.0,
+                    2.0 + t_apex,
+                    2.0 + 2 * t_apex,
+                    2.0 + 2 * t_apex + 0.4,
+                    tf,
+                ],
+                [0.0, 0.0, l_Bx / 2.0, l_Bx / 2.0 + z_apex, l_Bx / 2.0, 0.0, 0.0],
                 t_vals[k],
             )
             body_x = linear_interp_t(
-                [0.0, 1.4, 2.0, 2.0 + 2 * t_apex, tf],
-                [0.0, 0.0, -l_Bx / 2.0, -3.0 / 2.0 * l_Bx, -3.0 / 2.0 * l_Bx],
+                [0.0, 1.6, 2.0, 2.0 + 2 * t_apex, 2.0 + 2 * t_apex + 0.4, tf],
+                [0.0, 0.0, -l_Bx / 2.0, -3.0 / 2.0 * l_Bx, -2.0 * l_Bx, -2.0 * l_Bx],
                 t_vals[k],
             )
             angle = linear_interp_t(
-                [0, 1.4, 2.0, 2.0 + 2 * t_apex, tf],
-                [0.0, 0.0, np.pi / 2.0, 3.0 / 2.0 * np.pi, 3.0 / 2.0 * np.pi],
+                [0, 1.6, 2.0, 2.0 + 2 * t_apex, 2.0 + 2 * t_apex + 0.4, tf],
+                [0.0, 0.0, np.pi / 2.0, 3.0 / 2.0 * np.pi, 2.0 * np.pi, 2.0 * np.pi],
                 t_vals[k],
             )
             p = np.array([0.0, 0.0, 0.2])
@@ -315,6 +323,17 @@ def generate_reference():
                         )
                     else:
                         p_i[leg] = B_p_Bi[leg].copy()
+            elif t_vals[k] > 2.0 + 2 * t_apex:
+                for leg in legs:
+                    if leg == legs.HL or leg == legs.HR:
+                        p_Bi = mult_homog_point_np(T_B, B_p_Bi[leg])
+                        p_i[leg] = p_Bi.copy()
+                        p_i[leg][0:3:2] += rot_mat_2d_np(2.0 * angle) @ np.array(
+                            [0.0, -0.2]
+                        )
+                    else:
+                        p_i[leg] = B_p_Bi[leg].copy()
+                        p_i[leg][0] -= 2.0 * l_Bx
             else:
                 for leg in legs:
                     B_T_Bi_leg = B_T_Bi[leg].copy()
