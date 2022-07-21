@@ -457,6 +457,44 @@ if __name__ == "__main__":
     )
     print(torque_limit)
 
+    # # calculation used to debug angle wrapping issue in 07-05-180-backflip trajectory
+    # p = np.array([-2.22904149e-01, 1.86470565e-14, 3.07146706e-01])
+    # R = np.array(
+    #     [
+    #         [-8.47305219e-01, 3.74376852e-14, -5.31291236e-01],
+    #         [-3.93408699e-13, 1.00000000e00, 6.97888883e-13],
+    #         [5.31291236e-01, 8.00304925e-13, -8.47305219e-01],
+    #     ]
+    # )
+    # p_i = {}
+    # p_i[leg.FL] = np.array([-0.60159766, 0.15, 0.32938683])
+    # p_i[leg.FR] = np.array([-0.60159766, -0.15, 0.32938683])
+    # p_i[leg.HL] = np.array([-1.90037668e-01, 1.50000000e-01, -9.85315547e-09])
+    # p_i[leg.HR] = np.array([-1.90037668e-01, -1.50000000e-01, -9.85315547e-09])
+    # p_next = np.array([-2.27567091e-01, 2.96891007e-15, 3.02150509e-01])
+    # R_next = np.array(
+    #     [
+    #         [-8.73350678e-01, 3.99658078e-16, -4.87295136e-01],
+    #         [-4.11243103e-13, 1.00000000e00, 7.37879702e-13],
+    #         [4.87295136e-01, 8.44789798e-13, -8.73350678e-01],
+    #     ]
+    # )
+    # p_i_next = {}
+    # p_i_next[leg.FL] = np.array([-0.60348592, 0.15, 0.29296728])
+    # p_i_next[leg.FR] = np.array([-0.60348592, -0.15, 0.29296728])
+    # p_i_next[leg.HL] = np.array([-1.90037803e-01, 1.50000000e-01, -9.87121367e-09])
+    # p_i_next[leg.HR] = np.array([-1.90037803e-01, -1.50000000e-01, -9.87121367e-09])
+
+    # f_i = {}
+    # for leg in legs:
+    #     f_i[leg] = np.zeros(3)
+
+    # from draw import *
+    # init_fig()
+    # draw(p, R, p_i, f_i)
+    # draw(p_next, R_next, p_i_next, f_i)
+    # plt.show()
+
     import ipdb
 
     ipdb.set_trace()
