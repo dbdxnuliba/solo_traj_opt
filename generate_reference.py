@@ -38,7 +38,7 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "backflip"
+    motion_type = "180-backflip"
 
     if motion_type == "stand":
         tf = 10.0

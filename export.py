@@ -13,24 +13,6 @@ def export_to_csv(X, U, dt, fname, elbow_up_front=True, elbow_up_hind=False):
     for k in range(N + 1):
         # extract state variables
         p, R, pdot, omega, p_i, f_i = extract_state_np(X, U, k)
-        if k != N:
-            (
-                p_next,
-                R_next,
-                pdot_next,
-                omega_next,
-                p_i_next,
-                f_i_next,
-            ) = extract_state_np(X, U, k + 1)
-        else:
-            p_next, R_next, pdot_next, omega_next, p_i_next, f_i_next = (
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-            )
         t = k * dt
 
         # convert orientation to quaternion
@@ -43,15 +25,18 @@ def export_to_csv(X, U, dt, fname, elbow_up_front=True, elbow_up_hind=False):
         for leg in legs:
             q = np.hstack((q, q_i[leg]))
 
+        # add or subtract 2*pi if wrapping occured compared to previous timestep
+        # (due to arctan2 in inverse kinematicss)
+        if k > 0 and np.linalg.norm(q - q_prev) > 3.0 / 2.0 * np.pi:
+            for joint_idx in range(len(q)):
+                if q[joint_idx] - q_prev[joint_idx] > 3.0 / 2.0 * np.pi:
+                    q[joint_idx] -= 2 * np.pi
+                if q[joint_idx] - q_prev[joint_idx] < -3.0 / 2.0 * np.pi:
+                    q[joint_idx] += 2 * np.pi
+
         # calculate joint velocity qdot
-        if k != N:
-            q_i_next = solo_IK_np(
-                p_next, R_next, p_i_next, elbow_up_front, elbow_up_hind
-            )
-            q_next = []
-            for leg in legs:
-                q_next = np.hstack((q_next, q_i_next[leg]))
-            qdot = (q_next - q) / dt
+        if k != 0:
+            qdot = (q - q_prev) / dt
         else:
             qdot = np.zeros_like(q)
 
@@ -65,6 +50,9 @@ def export_to_csv(X, U, dt, fname, elbow_up_front=True, elbow_up_hind=False):
         # with RL and robot control code
         traj_t = np.hstack((t, p, quat, pdot, omega, -q, -qdot, -tau))
         to_save[k, :] = traj_t
+
+        # store calculated q to be used for angular velocity calculation at next timestep
+        q_prev = q
 
     np.savetxt("csv/" + fname + ".csv", to_save, delimiter=", ", fmt="%0.16f")
 
