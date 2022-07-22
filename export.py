@@ -19,6 +19,13 @@ def export_to_csv(X, U, dt, fname, elbow_up_front=True, elbow_up_hind=False):
         quat_xyzw = Rotation.from_matrix(R).as_quat()
         quat = np.roll(quat_xyzw, 1)
 
+        # negate quaternion if wrapping occured compared to previous timestep
+        if k > 0:
+            quat_diff1 = np.linalg.norm(quat[1:] - quat_prev[1:])
+            quat_diff2 = np.linalg.norm(quat[1:] + quat_prev[1:])
+            if quat_diff1 - quat_diff2 > eps:
+                quat *= -1.0
+
         # calculate joint angle q
         q_i = solo_IK_np(p, R, p_i, elbow_up_front, elbow_up_hind)
         q = []
@@ -53,6 +60,7 @@ def export_to_csv(X, U, dt, fname, elbow_up_front=True, elbow_up_hind=False):
 
         # store calculated q to be used for angular velocity calculation at next timestep
         q_prev = q
+        quat_prev = quat
 
     np.savetxt("csv/" + fname + ".csv", to_save, delimiter=", ", fmt="%0.16f")
 
