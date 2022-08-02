@@ -37,19 +37,13 @@ if __name__ == "__main__":
         args.name = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
 
     # generate reference, optionally display/save animation
-    X_ref, U_ref, dt, elbow_up_front, elbow_up_hind = generate_reference()
+    X_ref, U_ref, dt, motion_options = generate_reference()
     if args.save:
         fname_ref = args.name + "-ref"
     else:
         fname_ref = None
     animate_traj(
-        X_ref,
-        U_ref,
-        dt,
-        fname_ref,
-        display=args.display,
-        elbow_up_front=elbow_up_front,
-        elbow_up_hind=elbow_up_hind,
+        X_ref, U_ref, dt, fname_ref, display=args.display, motion_options=motion_options
     )
 
     # solve trajectory optimization
@@ -59,14 +53,7 @@ if __name__ == "__main__":
 
     # optionally export trajectory to csv
     if args.export:
-        export_to_csv(
-            X_sol,
-            U_sol,
-            dt,
-            args.name,
-            elbow_up_front=elbow_up_front,
-            elbow_up_hind=elbow_up_hind,
-        )
+        export_to_csv(X_sol, U_sol, dt, args.name, motion_options)
 
     # optionally display/save solution animation
     if args.save:
@@ -74,11 +61,5 @@ if __name__ == "__main__":
     else:
         fname = None
     animate_traj(
-        X_sol,
-        U_sol,
-        dt,
-        fname,
-        display=args.display,
-        elbow_up_front=elbow_up_front,
-        elbow_up_hind=elbow_up_hind,
+        X_sol, U_sol, dt, fname, display=args.display, motion_options=motion_options
     )

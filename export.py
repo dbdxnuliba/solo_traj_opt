@@ -6,7 +6,14 @@ from generate_reference import generate_reference
 from utils import extract_state_np, solo_IK_np, solo_jac_transpose_np
 
 
-def export_to_csv(X, U, dt, fname, elbow_up_front=True, elbow_up_hind=False):
+def export_to_csv(X, U, dt, fname, motion_options={}):
+    elbow_up_front = (
+        motion_options["elbow_up_front"] if "elbow_up_front" in motion_options else None
+    )
+    elbow_up_hind = (
+        motion_options["elbow_up_hind"] if "elbow_up_hind" in motion_options else None
+    )
+
     N = X.shape[1] - 1
 
     to_save = np.zeros((N + 1, 38))
@@ -66,5 +73,5 @@ def export_to_csv(X, U, dt, fname, elbow_up_front=True, elbow_up_hind=False):
 
 
 if __name__ == "__main__":
-    X_ref, U_ref, dt = generate_reference()
-    export_to_csv(X_ref, U_ref, dt, "test")
+    X_ref, U_ref, dt, motion_options = generate_reference()
+    export_to_csv(X_ref, U_ref, dt, "test", motion_options)

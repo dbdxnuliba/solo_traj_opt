@@ -31,7 +31,14 @@ def draw_T(T):
         line.set_color(axis_colors[axis])
 
 
-def draw(p, R, p_i, f_i, f_len=0.02, elbow_up_front=True, elbow_up_hind=False):
+def draw(p, R, p_i, f_i, f_len=0.02, motion_options={}):
+    elbow_up_front = (
+        motion_options["elbow_up_front"] if "elbow_up_front" in motion_options else None
+    )
+    elbow_up_hind = (
+        motion_options["elbow_up_hind"] if "elbow_up_hind" in motion_options else None
+    )
+
     T_B = homog_np(p, R)
     p_Bi = {}
     for leg in legs:
@@ -107,23 +114,14 @@ def init_fig():
     return anim_fig, ax
 
 
-def animate_traj(
-    X,
-    U,
-    dt,
-    fname=None,
-    display=True,
-    repeat=True,
-    elbow_up_front=True,
-    elbow_up_hind=False,
-):
+def animate_traj(X, U, dt, fname=None, display=True, repeat=True, motion_options={}):
     anim_fig, ax = init_fig()
 
     def draw_frame(k):
         p, R, pdot, omega, p_i, f_i = extract_state_np(X, U, k)
         while ax.lines:
             ax.lines.pop()
-        draw(p, R, p_i, f_i, elbow_up_front=elbow_up_front, elbow_up_hind=elbow_up_hind)
+        draw(p, R, p_i, f_i, motion_options=motion_options)
 
     N = X.shape[1] - 1
 
