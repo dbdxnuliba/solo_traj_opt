@@ -38,7 +38,7 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "jump"
+    motion_type = "backflip"
 
     if motion_type == "stand":
         tf = 10.0
@@ -81,6 +81,7 @@ def generate_reference():
                 p_i[leg] = B_p_Bi[leg].copy()
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = False
+            motion_options["symmetry"] = "sideways"
         if motion_type == "squat":
             if k * dt < 0.5 or k * dt > 9.5:
                 body_z = 0.2
@@ -99,6 +100,7 @@ def generate_reference():
                 p_i[leg] = B_p_Bi[leg].copy()
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = False
+            motion_options["symmetry"] = "sideways"
         if motion_type == "trot":
             if k * dt < 0.5 or k * dt > 9.5:
                 body_x = -0.3
@@ -129,6 +131,7 @@ def generate_reference():
                         )
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = False
+            motion_options["symmetry"] = "diagonal"
         if motion_type == "bound":
             if k * dt < 0.5 or k * dt > 9.5:
                 body_x = -0.3
@@ -159,6 +162,7 @@ def generate_reference():
                         )
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = False
+            motion_options["symmetry"] = "sideways"
         if motion_type == "pronk":
             if k * dt < 0.5 or k * dt > 9.5:
                 body_x = -0.3
@@ -184,6 +188,7 @@ def generate_reference():
                     )
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = False
+            motion_options["symmetry"] = "sideways"
         if motion_type == "jump":
             t_apex = 0.3
             z_apex = np.linalg.norm(g) * t_apex**2 / 2.0
@@ -201,6 +206,7 @@ def generate_reference():
                 p_i[leg][2] += body_z
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = False
+            motion_options["symmetry"] = "sideways"
         elif motion_type == "half_cartwheel":
             body_height = 0.2
             angle = cubic_interp_t(
@@ -221,6 +227,7 @@ def generate_reference():
                     p_i[leg] = B_p_Bi[leg].copy()
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = False
+            motion_options["symmetry"] = "sideways"
         elif motion_type == "front-hop":
             body_height = 0.2
             angle = cubic_interp_t(
@@ -241,6 +248,7 @@ def generate_reference():
                     p_i[leg] = B_p_Bi[leg].copy()
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = False
+            motion_options["symmetry"] = "sideways"
         elif motion_type == "180-backflip":
             body_height = 0.2
             angle = cubic_interp_t([0, 2.0, 3.2, tf], [0, 0, np.pi, np.pi], t_vals[k])
@@ -262,6 +270,7 @@ def generate_reference():
                     p_i[leg] = B_p_Bi[leg].copy()
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = True
+            motion_options["symmetry"] = "sideways"
         elif motion_type == "180-frontflip":
             body_height = 0.2
             angle = cubic_interp_t([0, 2.0, 3.2, tf], [0, 0, -np.pi, -np.pi], t_vals[k])
@@ -283,6 +292,7 @@ def generate_reference():
                     p_i[leg] = B_p_Bi[leg].copy()
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = True
+            motion_options["symmetry"] = "sideways"
         if motion_type == "backflip":
             t_apex = 0.2
             z_apex = np.linalg.norm(g) * t_apex**2 / 2.0
@@ -347,6 +357,7 @@ def generate_reference():
                     p_i[leg] = T_B_i[0:3, 3]
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = True
+            motion_options["symmetry"] = "sideways"
 
         pdot = np.array([0.0, 0.0, 0.0])
         omega = np.array([0.0, 0.0, 0.0])

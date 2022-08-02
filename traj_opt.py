@@ -16,7 +16,9 @@ import numpy as np
 import casadi as ca
 
 
-def traj_opt(X_ref, U_ref, dt):
+def traj_opt(X_ref, U_ref, dt, motion_options={}):
+    symmetry = motion_options["symmetry"] if "symmetry" in motion_options else None
+
     skew_ca = derive_skew_ca()
     rot_mat_ca = derive_rot_mat_ca()
     homog_ca = derive_homog_ca()
@@ -118,34 +120,41 @@ def traj_opt(X_ref, U_ref, dt):
             opti.subject_to(opti.bounded(-eps, Bi_p_i[leg][1], eps))
 
         # symmetry constraints
-        # opti.subject_to(
-        #     opti.bounded(-eps, Bi_p_i[legs.FL][0] - Bi_p_i[legs.HR][0], eps)
-        # )
-        # opti.subject_to(
-        #     opti.bounded(-eps, Bi_p_i[legs.HL][0] - Bi_p_i[legs.FR][0], eps)
-        # )
-        # opti.subject_to(
-        #     opti.bounded(-eps, Bi_p_i[legs.FL][2] - Bi_p_i[legs.HR][2], eps)
-        # )
-        # opti.subject_to(
-        #     opti.bounded(-eps, Bi_p_i[legs.HL][2] - Bi_p_i[legs.FR][2], eps)
-        # )
-
-        # opti.subject_to(opti.bounded(-eps, f_i[legs.FL] - f_i[legs.HR], eps))
-        # opti.subject_to(opti.bounded(-eps, f_i[legs.HL] - f_i[legs.FR], eps))
-
-        # opti.subject_to(
-        #     opti.bounded(-eps, Bi_p_i[legs.FL][0] - Bi_p_i[legs.FR][0], eps)
-        # )
-        # opti.subject_to(
-        #     opti.bounded(-eps, Bi_p_i[legs.HL][0] - Bi_p_i[legs.HR][0], eps)
-        # )
-        # opti.subject_to(
-        #     opti.bounded(-eps, Bi_p_i[legs.FL][2] - Bi_p_i[legs.FR][2], eps)
-        # )
-        # opti.subject_to(
-        #     opti.bounded(-eps, Bi_p_i[legs.HL][2] - Bi_p_i[legs.HR][2], eps)
-        # )
+        if symmetry == "sideways":
+            opti.subject_to(
+                opti.bounded(-eps, Bi_p_i[legs.FL][0] - Bi_p_i[legs.FR][0], eps)
+            )
+            opti.subject_to(
+                opti.bounded(-eps, Bi_p_i[legs.HL][0] - Bi_p_i[legs.HR][0], eps)
+            )
+            # kinematic constraint already enforces y coord == 0
+            opti.subject_to(
+                opti.bounded(-eps, Bi_p_i[legs.FL][2] - Bi_p_i[legs.FR][2], eps)
+            )
+            opti.subject_to(
+                opti.bounded(-eps, Bi_p_i[legs.HL][2] - Bi_p_i[legs.HR][2], eps)
+            )
+            # vector bounded by scalar -> multiple scalar constraints
+            opti.subject_to(opti.bounded(-eps, f_i[legs.FL] - f_i[legs.FR], eps))
+            opti.subject_to(opti.bounded(-eps, f_i[legs.HL] - f_i[legs.HR], eps))
+        elif symmetry == "diagonal":
+            # symmetry constraints
+            opti.subject_to(
+                opti.bounded(-eps, Bi_p_i[legs.FL][0] - Bi_p_i[legs.HR][0], eps)
+            )
+            opti.subject_to(
+                opti.bounded(-eps, Bi_p_i[legs.HL][0] - Bi_p_i[legs.FR][0], eps)
+            )
+            # kinematic constraint already enforces y coord == 0
+            opti.subject_to(
+                opti.bounded(-eps, Bi_p_i[legs.FL][2] - Bi_p_i[legs.HR][2], eps)
+            )
+            opti.subject_to(
+                opti.bounded(-eps, Bi_p_i[legs.HL][2] - Bi_p_i[legs.FR][2], eps)
+            )
+            # vector bounded by scalar -> multiple scalar constraints
+            opti.subject_to(opti.bounded(-eps, f_i[legs.FL] - f_i[legs.HR], eps))
+            opti.subject_to(opti.bounded(-eps, f_i[legs.HL] - f_i[legs.FR], eps))
 
         # friction pyramid constraints
         for leg in legs:

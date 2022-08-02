@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     # solve trajectory optimization
     start_time = time.time()
-    X_sol, U_sol = traj_opt(X_ref, U_ref, dt)
+    X_sol, U_sol = traj_opt(X_ref, U_ref, dt, motion_options)
     print("\nOptimization took {} minutes".format((time.time() - start_time) / 60.0))
 
     # optionally export trajectory to csv
