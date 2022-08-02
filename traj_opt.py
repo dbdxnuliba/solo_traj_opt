@@ -57,6 +57,14 @@ def traj_opt(X_ref, U_ref, dt):
             X_ref, U_ref, k
         )
 
+        # calculate relative foot locations
+        T_B = homog_ca(p, R)
+        Bi_p_i = {}
+        for leg in legs:
+            T_Bi_leg = T_B @ B_T_Bi[leg]
+            Bi_T_leg = reverse_homog_ca(T_Bi_leg)
+            Bi_p_i[leg] = mult_homog_point_ca(Bi_T_leg, p_i[leg])
+
         # objective function
         error_p = p - p_ref
         error_p_i = {}
@@ -98,16 +106,46 @@ def traj_opt(X_ref, U_ref, dt):
             )
 
         # kinematics constraints
-        T_B = homog_ca(p, R)
         for leg in legs:
-            T_Bi = T_B @ B_T_Bi[leg]
-            Bi_T = reverse_homog_ca(T_Bi)
-            Bi_p_i = mult_homog_point_ca(Bi_T, p_i[leg])
             # L1 norm constraint in the shoulder plane
-            opti.subject_to(opti.bounded(-kin_lim, Bi_p_i[0] + Bi_p_i[2], kin_lim))
-            opti.subject_to(opti.bounded(-kin_lim, Bi_p_i[0] - Bi_p_i[2], kin_lim))
+            opti.subject_to(
+                opti.bounded(-kin_lim, Bi_p_i[leg][0] + Bi_p_i[leg][2], kin_lim)
+            )
+            opti.subject_to(
+                opti.bounded(-kin_lim, Bi_p_i[leg][0] - Bi_p_i[leg][2], kin_lim)
+            )
             # y position should be on shoulder plane (within some numerical tolerance)
-            opti.subject_to(opti.bounded(-eps, Bi_p_i[1], eps))
+            opti.subject_to(opti.bounded(-eps, Bi_p_i[leg][1], eps))
+
+        # symmetry constraints
+        # opti.subject_to(
+        #     opti.bounded(-eps, Bi_p_i[legs.FL][0] - Bi_p_i[legs.HR][0], eps)
+        # )
+        # opti.subject_to(
+        #     opti.bounded(-eps, Bi_p_i[legs.HL][0] - Bi_p_i[legs.FR][0], eps)
+        # )
+        # opti.subject_to(
+        #     opti.bounded(-eps, Bi_p_i[legs.FL][2] - Bi_p_i[legs.HR][2], eps)
+        # )
+        # opti.subject_to(
+        #     opti.bounded(-eps, Bi_p_i[legs.HL][2] - Bi_p_i[legs.FR][2], eps)
+        # )
+
+        # opti.subject_to(opti.bounded(-eps, f_i[legs.FL] - f_i[legs.HR], eps))
+        # opti.subject_to(opti.bounded(-eps, f_i[legs.HL] - f_i[legs.FR], eps))
+
+        # opti.subject_to(
+        #     opti.bounded(-eps, Bi_p_i[legs.FL][0] - Bi_p_i[legs.FR][0], eps)
+        # )
+        # opti.subject_to(
+        #     opti.bounded(-eps, Bi_p_i[legs.HL][0] - Bi_p_i[legs.HR][0], eps)
+        # )
+        # opti.subject_to(
+        #     opti.bounded(-eps, Bi_p_i[legs.FL][2] - Bi_p_i[legs.FR][2], eps)
+        # )
+        # opti.subject_to(
+        #     opti.bounded(-eps, Bi_p_i[legs.HL][2] - Bi_p_i[legs.HR][2], eps)
+        # )
 
         # friction pyramid constraints
         for leg in legs:
@@ -176,8 +214,8 @@ def traj_opt(X_ref, U_ref, dt):
 
 
 if __name__ == "__main__":
-    X_ref, U_ref, dt = generate_reference()
-    animate_traj(X_ref, U_ref, dt)
+    X_ref, U_ref, dt, motion_options = generate_reference()
+    # animate_traj(X_ref, U_ref, dt, motion_options=motion_options)
 
     X_sol, U_sol = traj_opt(X_ref, U_ref, dt)
-    animate_traj(X_sol, U_sol, dt)
+    # animate_traj(X_sol, U_sol, dt, motion_options=motion_options)
