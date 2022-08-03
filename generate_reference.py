@@ -121,11 +121,11 @@ def generate_reference():
                 else:
                     if leg == legs.FL or leg == legs.HR:
                         p_i[leg][2] += max(
-                            0.0, sinusoid(0.5, -0.1, 0.1, t_vals[k], pi / 2.0)
+                            0.0, sinusoid(0.5, -0.05, 0.05, t_vals[k], pi / 2.0)
                         )
                     else:
                         p_i[leg][2] += max(
-                            0.0, sinusoid(0.5, -0.1, 0.1, t_vals[k], 3.0 * pi / 2.0)
+                            0.0, sinusoid(0.5, -0.05, 0.05, t_vals[k], 3.0 * pi / 2.0)
                         )
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = False
@@ -152,11 +152,11 @@ def generate_reference():
                 else:
                     if leg == legs.FL or leg == legs.FR:
                         p_i[leg][2] += max(
-                            0.0, sinusoid(0.5, -0.1, 0.1, t_vals[k], pi / 2.0)
+                            0.0, sinusoid(0.5, -0.05, 0.05, t_vals[k], pi / 2.0)
                         )
                     else:
                         p_i[leg][2] += max(
-                            0.0, sinusoid(0.5, -0.1, 0.1, t_vals[k], 3.0 * pi / 2.0)
+                            0.0, sinusoid(0.5, -0.05, 0.05, t_vals[k], 3.0 * pi / 2.0)
                         )
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = False
@@ -182,7 +182,7 @@ def generate_reference():
                     pass
                 else:
                     p_i[leg][2] += max(
-                        0.0, sinusoid(0.5, -0.1, 0.1, t_vals[k], pi / 2.0)
+                        0.0, sinusoid(0.5, -0.05, 0.05, t_vals[k], pi / 2.0)
                     )
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = False
