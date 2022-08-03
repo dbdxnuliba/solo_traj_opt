@@ -52,8 +52,6 @@ def generate_reference():
         tf = 10.0
     if motion_type == "jump":
         tf = 2.0
-    elif motion_type == "half_cartwheel":
-        tf = 5.0
     elif motion_type == "front-hop":
         tf = 5.0
     elif motion_type == "180-backflip":
@@ -204,27 +202,6 @@ def generate_reference():
             for leg in legs:
                 p_i[leg] = B_p_Bi[leg].copy()
                 p_i[leg][2] += body_z
-            motion_options["elbow_up_front"] = True
-            motion_options["elbow_up_hind"] = False
-            motion_options["symmetry"] = "sideways"
-        elif motion_type == "half_cartwheel":
-            body_height = 0.2
-            angle = cubic_interp_t(
-                [0, 1.6, 2.5, 3.4, tf], [0, 0, np.pi / 2.0, 0, 0], t_vals[k]
-            )
-            p = np.array([-l_Bx / 2.0, 0.0, body_height])
-            p_xz = rot_mat_2d_np(angle) @ np.array([l_Bx / 2.0, 0.0])
-            p += np.array([p_xz[0], 0.0, p_xz[1]])
-            R = rot_mat_np(np.array([0.0, 1.0, 0.0]), -angle)
-            p_i = {}
-            T_B = homog_np(p, R)
-            for leg in legs:
-                if leg == legs.FL or leg == legs.FR:
-                    p_Bi = mult_homog_point_np(T_B, B_p_Bi[leg])
-                    p_i[leg] = p_Bi.copy()
-                    p_i[leg][2] -= body_height
-                else:
-                    p_i[leg] = B_p_Bi[leg].copy()
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = False
             motion_options["symmetry"] = "sideways"
