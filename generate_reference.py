@@ -38,7 +38,7 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "backflip"
+    motion_type = "jump"
 
     if motion_type == "stand":
         tf = 10.0
@@ -188,7 +188,7 @@ def generate_reference():
             motion_options["elbow_up_hind"] = False
             motion_options["symmetry"] = "sideways"
         if motion_type == "jump":
-            t_apex = 0.3
+            t_apex = 0.2
             z_apex = np.linalg.norm(g) * t_apex**2 / 2.0
             body_z = cubic_interp_t(
                 [0, 0.2 * tf, 0.2 * tf + t_apex, 0.2 * tf + 2 * t_apex, tf],
