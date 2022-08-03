@@ -54,6 +54,9 @@ def export_to_csv(X, U, dt, fname, motion_options={}):
         else:
             qdot = np.zeros_like(q)
 
+        # clip joint velocity, which is a hack to not make PD controller output crazy torques
+        qdot = np.clip(qdot, -qdot_lim, qdot_lim)
+
         # calculate joint torque tau
         tau_i = solo_jac_transpose_np(p, R, p_i, f_i, elbow_up_front, elbow_up_hind)
         tau = []
