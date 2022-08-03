@@ -90,7 +90,7 @@ def traj_opt(X_ref, U_ref, dt, motion_options={}):
             p_i_dot = {}
             for leg in legs:
                 p_i_dot[leg] = (p_i_next[leg] - p_i[leg]) / dt
-            J += ca.dot(R_p_i_dot * p_i_dot[leg], p_i_dot[leg])
+                J += ca.dot(R_p_i_dot * p_i_dot[leg], p_i_dot[leg])
 
         # dynamics constraints
         f = ca.MX(3, 1)
