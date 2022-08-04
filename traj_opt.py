@@ -134,9 +134,12 @@ def traj_opt(X_ref, U_ref, dt, motion_options={}):
             opti.subject_to(
                 opti.bounded(-eps, Bi_p_i[legs.HL][2] - Bi_p_i[legs.HR][2], eps)
             )
-            # vector bounded by scalar -> multiple scalar constraints
-            opti.subject_to(opti.bounded(-eps, f_i[legs.FL] - f_i[legs.FR], eps))
-            opti.subject_to(opti.bounded(-eps, f_i[legs.HL] - f_i[legs.HR], eps))
+            opti.subject_to(opti.bounded(-eps, f_i[legs.FL][0] - f_i[legs.FR][0], eps))
+            opti.subject_to(opti.bounded(-eps, f_i[legs.HL][0] - f_i[legs.HR][0], eps))
+            opti.subject_to(opti.bounded(-eps, f_i[legs.FL][1] - f_i[legs.FR][1], eps))
+            opti.subject_to(opti.bounded(-eps, f_i[legs.HL][1] - f_i[legs.HR][1], eps))
+            opti.subject_to(opti.bounded(-eps, f_i[legs.FL][2] - f_i[legs.FR][2], eps))
+            opti.subject_to(opti.bounded(-eps, f_i[legs.HL][2] - f_i[legs.HR][2], eps))
         elif symmetry == "diagonal":
             # symmetry constraints
             opti.subject_to(
@@ -153,8 +156,12 @@ def traj_opt(X_ref, U_ref, dt, motion_options={}):
                 opti.bounded(-eps, Bi_p_i[legs.HL][2] - Bi_p_i[legs.FR][2], eps)
             )
             # vector bounded by scalar -> multiple scalar constraints
-            opti.subject_to(opti.bounded(-eps, f_i[legs.FL] - f_i[legs.HR], eps))
-            opti.subject_to(opti.bounded(-eps, f_i[legs.HL] - f_i[legs.FR], eps))
+            opti.subject_to(opti.bounded(-eps, f_i[legs.FL][0] - f_i[legs.HR][0], eps))
+            opti.subject_to(opti.bounded(-eps, f_i[legs.HL][0] - f_i[legs.FR][0], eps))
+            opti.subject_to(opti.bounded(-eps, f_i[legs.FL][1] - f_i[legs.HR][1], eps))
+            opti.subject_to(opti.bounded(-eps, f_i[legs.HL][1] - f_i[legs.FR][1], eps))
+            opti.subject_to(opti.bounded(-eps, f_i[legs.FL][2] - f_i[legs.HR][2], eps))
+            opti.subject_to(opti.bounded(-eps, f_i[legs.HL][2] - f_i[legs.FR][2], eps))
 
         # friction pyramid constraints
         for leg in legs:
