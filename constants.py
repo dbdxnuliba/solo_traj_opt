@@ -19,7 +19,7 @@ l_calf = 0.160  # length of lower leg measured axis to axis (from CAD)
 
 # robot inertial paramters
 # TODO: check if mass of motors is included and below inertial properties
-m = 1.43315091  # mass of body  (from URDF)
+m = 2.17785  # mass of entire robot  (from raisim solo8_->getTotalMass())
 # body moment of inertia in body frame (from URDF)
 B_I = np.diag([0.00578574, 0.01938108, 0.02476124])
 B_I_inv = np.diag(1 / np.array([0.00578574, 0.01938108, 0.02476124]))
