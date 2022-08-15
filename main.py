@@ -46,6 +46,10 @@ if __name__ == "__main__":
         X_ref, U_ref, dt, fname_ref, display=args.display, motion_options=motion_options
     )
 
+    # optionally export reference to csv
+    if args.export:
+        export_to_csv(X_ref, U_ref, dt, args.name + "-ref", motion_options)
+
     # solve trajectory optimization
     start_time = time.time()
     X_sol, U_sol = traj_opt(X_ref, U_ref, dt, motion_options)

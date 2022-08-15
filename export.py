@@ -28,10 +28,10 @@ def export_to_csv(X, U, dt, fname, motion_options={}):
 
         # negate quaternion if wrapping occured compared to previous timestep
         if k > 0:
-            quat_diff1 = np.linalg.norm(quat[1:] - quat_prev[1:])
-            quat_diff2 = np.linalg.norm(quat[1:] + quat_prev[1:])
-            if quat_diff1 - quat_diff2 > eps:
-                quat *= -1.0
+            for quat_idx in range(4):
+                if abs(quat[quat_idx] - quat_prev[quat_idx]) > 1.0:
+                    quat *= -1.0
+                    continue
 
         # calculate joint angle q
         q_i = solo_IK_np(p, R, p_i, elbow_up_front, elbow_up_hind)
