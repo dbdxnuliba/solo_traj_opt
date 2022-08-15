@@ -38,7 +38,7 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "jump"
+    motion_type = "back-cartwheel"
 
     if motion_type == "stand":
         tf = 10.0
@@ -60,6 +60,8 @@ def generate_reference():
         tf = 5.0
     if motion_type == "backflip":
         tf = 5.0
+    elif motion_type == "back-cartwheel":
+        tf = 10.0
 
     N = int(tf * 50)
     dt = tf / (N)
@@ -332,6 +334,54 @@ def generate_reference():
                         B_T_Bi_leg[0, 3] -= 0.2
                     T_B_i = T_B @ B_T_Bi_leg
                     p_i[leg] = T_B_i[0:3, 3]
+            motion_options["elbow_up_front"] = True
+            motion_options["elbow_up_hind"] = True
+            motion_options["symmetry"] = "sideways"
+        elif motion_type == "back-cartwheel":
+            body_height = 0.2
+            angle = cubic_interp_t(
+                [0, 2.0, 3.2, 7.0, 8.2, tf],
+                [0, 0, np.pi, np.pi, 2.0 * np.pi, 2.0 * np.pi],
+                t_vals[k],
+            )
+            if t_vals[k] <= tf / 2.0:
+                p = np.array([-l_Bx / 2.0, 0.0, body_height])
+                p_xz = rot_mat_2d_np(angle) @ np.array([l_Bx / 2.0, 0.0])
+                p += np.array([p_xz[0], 0.0, p_xz[1]])
+                R = rot_mat_np(np.array([0.0, 1.0, 0.0]), -angle)
+                p_i = {}
+                T_B = homog_np(p, R)
+                for leg in legs:
+                    if leg == legs.FL or leg == legs.FR:
+                        p_Bi = mult_homog_point_np(T_B, B_p_Bi[leg])
+                        p_i[leg] = p_Bi.copy()
+                        # p_i[leg][2] -= body_height
+                        p_i[leg][0:3:2] += rot_mat_2d_np(2.0 * angle) @ np.array(
+                            [0.0, -body_height]
+                        )
+                    else:
+                        p_i[leg] = B_p_Bi[leg].copy()
+            else:
+                p = np.array([-l_Bx * 3.0 / 2.0, 0.0, body_height])
+                p_xz = rot_mat_2d_np(angle - np.pi) @ np.array([l_Bx / 2.0, 0.0])
+                p += np.array([p_xz[0], 0.0, p_xz[1]])
+                R = rot_mat_np(np.array([0.0, 1.0, 0.0]), -angle)
+                p_i = {}
+                T_B = homog_np(p, R)
+                for leg in legs:
+                    if leg == legs.HL or leg == legs.HR:
+                        p_Bi = mult_homog_point_np(T_B, B_p_Bi[leg])
+                        p_i[leg] = p_Bi.copy()
+                        # p_i[leg][2] -= body_height
+                        p_i[leg][0:3:2] += rot_mat_2d_np(2.0 * angle) @ np.array(
+                            [0.0, -body_height]
+                        )
+                    elif leg == legs.FL:
+                        p_i[leg] = B_p_Bi[legs.HL].copy()
+                        p_i[leg][0] -= l_Bx
+                    elif leg == legs.FR:
+                        p_i[leg] = B_p_Bi[legs.HR].copy()
+                        p_i[leg][0] -= l_Bx
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = True
             motion_options["symmetry"] = "sideways"
