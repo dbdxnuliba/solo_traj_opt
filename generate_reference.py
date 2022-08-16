@@ -38,7 +38,7 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "biped-stand"
+    motion_type = "biped-step"
 
     if motion_type == "stand":
         tf = 10.0
@@ -64,6 +64,8 @@ def generate_reference():
         tf = 10.0
     if motion_type == "biped-stand":
         tf = 10
+    if motion_type == "biped-step":
+        tf = 5.0
 
     N = int(tf * 50)
     dt = tf / (N)
@@ -403,6 +405,50 @@ def generate_reference():
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = False
             # no symmetry
+        if motion_type == "biped-step":
+            p = np.array([0.0, 0.0, l_Bx / 2.0 + (l_thigh + l_calf) * 0.95])
+            R = rot_mat_np([0.0, 1.0, 0.0], -np.pi / 2.0)
+            T_B = homog_np(p, R)
+            p_i = {}
+            T_B_i = {}
+            for leg in legs:
+                T_B_i[leg] = T_B @ B_T_Bi[leg]
+                p_i[leg] = T_B_i[leg][0:3, 3]
+            if k * dt < 0.5 or k * dt > tf - 0.5:
+                for leg in legs:
+                    if leg == legs.HL or leg == legs.HR:
+                        p_i[leg][2] = 0.0
+                    else:
+                        p_i[leg][2] -= (l_thigh + l_calf) * 0.95
+            else:
+                p_i[leg.HL][2] = max(
+                    0.0, sinusoid(0.5, -0.05, 0.05, t_vals[k], pi / 2.0)
+                )
+                p_i[leg.HR][2] = max(
+                    0.0, sinusoid(0.5, -0.05, 0.05, t_vals[k], 3.0 * pi / 2.0)
+                )
+                arm_swing_amplitude = 0.5
+                p_i[leg.FL][::2] += rot_mat_2d_np(
+                    sinusoid(
+                        0.5,
+                        -arm_swing_amplitude - pi / 2.0,
+                        arm_swing_amplitude - pi / 2.0,
+                        t_vals[k],
+                        3.0 * pi / 2.0,
+                    )
+                ) @ np.array([(l_thigh + l_calf) * 0.95, 0])
+                p_i[leg.FR][::2] += rot_mat_2d_np(
+                    sinusoid(
+                        0.5,
+                        -arm_swing_amplitude - pi / 2.0,
+                        arm_swing_amplitude - pi / 2.0,
+                        t_vals[k],
+                        pi / 2.0,
+                    )
+                ) @ np.array([(l_thigh + l_calf) * 0.95, 0])
+                motion_options["elbow_up_front"] = True
+                motion_options["elbow_up_hind"] = False
+                # no symmetry
 
         pdot = np.array([0.0, 0.0, 0.0])
         omega = np.array([0.0, 0.0, 0.0])
