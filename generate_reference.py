@@ -38,7 +38,7 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "back-cartwheel"
+    motion_type = "biped-stand"
 
     if motion_type == "stand":
         tf = 10.0
@@ -62,6 +62,8 @@ def generate_reference():
         tf = 5.0
     elif motion_type == "back-cartwheel":
         tf = 10.0
+    if motion_type == "biped-stand":
+        tf = 10
 
     N = int(tf * 50)
     dt = tf / (N)
@@ -385,6 +387,22 @@ def generate_reference():
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = True
             motion_options["symmetry"] = "sideways"
+        if motion_type == "biped-stand":
+            p = np.array([0.0, 0.0, l_Bx / 2.0 + (l_thigh + l_calf) * 0.95])
+            R = rot_mat_np([0.0, 1.0, 0.0], -np.pi / 2.0)
+            T_B = homog_np(p, R)
+            p_i = {}
+            T_B_i = {}
+            for leg in legs:
+                T_B_i[leg] = T_B @ B_T_Bi[leg]
+                p_i[leg] = T_B_i[leg][0:3, 3]
+                if leg == legs.HL or leg == legs.HR:
+                    p_i[leg][2] = 0.0
+                else:
+                    p_i[leg][2] -= (l_thigh + l_calf) * 0.95
+            motion_options["elbow_up_front"] = True
+            motion_options["elbow_up_hind"] = False
+            # no symmetry
 
         pdot = np.array([0.0, 0.0, 0.0])
         omega = np.array([0.0, 0.0, 0.0])
