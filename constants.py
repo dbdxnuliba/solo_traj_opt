@@ -44,9 +44,11 @@ f_lim = 20.0  # max vertical force in newtons
 qdot_lim = 10.0  # joint velocity clip value in export()
 
 # LQR weights
-Q_p = np.array([1000.0, 1000.0, 1000.0])
+# Q_p = np.array([1000.0, 1000.0, 1000.0])
+Q_p = np.array([500.0, 500.0, 500.0])  # biped-step
 Q_p_i = np.array([500.0, 500.0, 500.0])
-Q_R = np.array([100.0, 100.0, 100.0])
+# Q_R = np.array([100.0, 100.0, 100.0])
+Q_R = np.array([50.0, 50.0, 50.0])  # biped-step
 Q_pdot = np.array([10.0, 10.0, 10.0])
 Q_omega = np.array([1.0, 1.0, 1.0])
 Q_f_i = np.array([0.1, 0.1, 0.1])
