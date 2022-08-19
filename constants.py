@@ -18,15 +18,18 @@ l_thigh = 0.165  # length of upper leg module measured axis to axis (from CAD)
 l_calf = 0.160  # length of lower leg measured axis to axis (from CAD)
 
 # robot inertial paramters
-# TODO: check if mass of motors is included and below inertial properties
-m = 2.17785  # mass of entire robot  (from raisim solo8_->getTotalMass())
-# body moment of inertia in body frame (from URDF)
-B_I = np.diag([0.00578574, 0.01938108, 0.02476124])
-B_I_inv = np.diag(1 / np.array([0.00578574, 0.01938108, 0.02476124]))
+# mass of entire robot, physically measured and consistent with ODRI documentation
+# https://github.com/open-dynamic-robot-initiative/open_robot_actuator_hardware/blob/master/mechanics/quadruped_robot_8dof_v2/README.md#description
+m = 1.7
+# moment of inertia of only the body, taken from ODRI documentation linked below, approximated to be diagonal
+# ideally it would be the moment of inertia of the whole robot (to include upper leg motor weights), but I don't have this info available
+# https://github.com/open-dynamic-robot-initiative/open_robot_actuator_hardware/blob/master/mechanics/quadruped_robot_8dof_v2/details/quadruped_8dof_v2_inertia.pdf
+B_I = np.diag([0.00533767, 0.01314118, 0.01821833])
+B_I_inv = np.diag(1 / np.array([0.00533767, 0.01314118, 0.01821833]))
 
 # physical parameters external to robot
 g = np.array([0.0, 0.0, -9.81])  # gravity vector
-mu = 0.7  # friction coefficient
+mu = 0.9  # friction coefficient
 
 # position of corners of robot, in body frame (so it's a constant)
 B_p_Bi = {}
