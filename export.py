@@ -33,6 +33,16 @@ def export_to_csv(X, U, dt, fname, motion_options={}):
                     quat *= -1.0
                     continue
 
+        # quaternion convention yf-08-18
+        if k == 0:
+            if quat[0] <= 0:
+                quat *= -1
+        else:
+            for quat_idx in range(4):
+                if abs(quat[quat_idx] - quat_prev[quat_idx]) > 1.0:
+                    quat *= -1
+                    continue
+
         # calculate joint angle q
         q_i = solo_IK_np(p, R, p_i, elbow_up_front, elbow_up_hind)
         q = []

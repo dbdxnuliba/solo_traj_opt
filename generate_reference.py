@@ -38,7 +38,7 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "biped-step"
+    motion_type = "biped-stand"
 
     if motion_type == "stand":
         tf = 10.0
@@ -63,7 +63,7 @@ def generate_reference():
     elif motion_type == "back-cartwheel":
         tf = 10.0
     if motion_type == "biped-stand":
-        tf = 10
+        tf = 5.0
     if motion_type == "biped-step":
         tf = 5.0
 
