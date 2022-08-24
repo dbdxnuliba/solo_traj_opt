@@ -38,7 +38,7 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "biped-stand"
+    motion_type = "biped-step"
 
     if motion_type == "stand":
         tf = 10.0
@@ -65,7 +65,7 @@ def generate_reference():
     if motion_type == "biped-stand":
         tf = 5.0
     if motion_type == "biped-step":
-        tf = 5.0
+        tf = 10.0
 
     N = int(tf * 50)
     dt = tf / (N)
@@ -414,7 +414,8 @@ def generate_reference():
             for leg in legs:
                 T_B_i[leg] = T_B @ B_T_Bi[leg]
                 p_i[leg] = T_B_i[leg][0:3, 3]
-            if k * dt < 0.5 or k * dt > tf - 0.5:
+            # if k * dt < 0.5 or k * dt > tf - 0.5:
+            if False:
                 for leg in legs:
                     if leg == legs.HL or leg == legs.HR:
                         p_i[leg][2] = 0.0
@@ -427,7 +428,7 @@ def generate_reference():
                 p_i[leg.HR][2] = max(
                     0.0, sinusoid(0.5, -0.05, 0.05, t_vals[k], 3.0 * pi / 2.0)
                 )
-                arm_swing_amplitude = 0.5
+                arm_swing_amplitude = 0.0
                 p_i[leg.FL][::2] += rot_mat_2d_np(
                     sinusoid(
                         0.5,
@@ -456,7 +457,8 @@ def generate_reference():
         for leg in legs:
             f_i[leg] = np.array([0.0, 0.0, 0.0])
             if p_i[leg][2] <= eps:
-                f_i[leg][2] = m * np.linalg.norm(g) / 4.0
+                # f_i[leg][2] = m * np.linalg.norm(g) / 4.0
+                f_i[leg][2] = m * np.linalg.norm(g) # for biped-step
         X[:, k], U[:, k] = flatten_state_np(p, R, pdot, omega, p_i, f_i)
 
     return X, U, dt, motion_options
