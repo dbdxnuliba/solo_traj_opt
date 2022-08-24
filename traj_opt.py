@@ -107,6 +107,16 @@ def traj_opt(X_ref, U_ref, dt, motion_options={}):
                 == omega + B_I_inv @ (R.T @ tau - skew_ca(omega) @ B_I @ omega) * dt
             )
 
+            # # 2D dynamics constrainted to x-z plane
+            # opti.subject_to(p_next[::2] == p[::2] + pdot[::2] * dt)
+            # opti.subject_to(pdot_next[::2] == pdot[::2] + (f[::2] / m + g[::2]) * dt)
+            # opti.subject_to(R_next == R @ rot_mat_ca(omega, dt))
+            # opti.subject_to(omega_next[1] == omega[1] + B_I_inv[1, 1] * tau[1] * dt)
+            # opti.subject_to(opti.bounded(-eps, p[1], eps))
+            # opti.subject_to(opti.bounded(-eps, pdot[1], eps))
+            # opti.subject_to(opti.bounded(-eps, omega[0], eps))
+            # opti.subject_to(opti.bounded(-eps, omega[2], eps))
+
         # kinematics constraints
         for leg in legs:
             # L1 norm constraint in the shoulder plane
