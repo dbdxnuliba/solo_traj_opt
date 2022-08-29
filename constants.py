@@ -55,7 +55,8 @@ Q_R = np.array([100.0, 100.0, 100.0])
 Q_pdot = np.array([10.0, 10.0, 10.0])
 Q_omega = np.array([1.0, 1.0, 1.0])
 Q_f_i = np.array([0.1, 0.1, 0.1])
-R_p_i_dot = np.array([1.0, 1.0, 1.0])
+# R_p_i_dot = np.array([1.0, 1.0, 1.0])
+R_p_i_dot = np.array([10.0, 10.0, 10.0]) # jump
 
 # matrix used for rotation matrix cost, calculated from above values
 Kp_vec = np.linalg.solve(

@@ -194,7 +194,7 @@ def generate_reference():
             motion_options["elbow_up_hind"] = False
             motion_options["symmetry"] = "sideways"
         if motion_type == "jump":
-            t_apex = 0.2
+            t_apex = 0.25
             z_apex = np.linalg.norm(g) * t_apex**2 / 2.0
             body_z = cubic_interp_t(
                 [0, 0.2 * tf, 0.2 * tf + t_apex, 0.2 * tf + 2 * t_apex, tf],
@@ -207,7 +207,8 @@ def generate_reference():
             p_i = {}
             for leg in legs:
                 p_i[leg] = B_p_Bi[leg].copy()
-                p_i[leg][2] += body_z
+                # p_i[leg][2] += body_z
+                p_i[leg][2] = max(0.0, p[2] - (l_thigh + l_calf) * 0.95)
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = False
             motion_options["symmetry"] = "sideways"
