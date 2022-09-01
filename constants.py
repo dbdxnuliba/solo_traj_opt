@@ -44,7 +44,7 @@ eps = 1e-6  # numerical zero threshold
 # limit constraint paramters
 kin_lim = l_thigh + l_calf  # used for L1 norm kinematic constraint
 f_lim = 20.0  # max vertical force in newtons
-qdot_lim = 10.0  # joint velocity clip value in export()
+qdot_lim = 100.0  # joint velocity clip value in export()
 
 # LQR weights
 Q_p = np.array([1000.0, 1000.0, 1000.0])
