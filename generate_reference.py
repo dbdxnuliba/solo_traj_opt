@@ -38,7 +38,7 @@ def sinusoid(period, min_val, max_val, t, phase_offset=0):
 
 
 def generate_reference():
-    motion_type = "biped-step"
+    motion_type = "180-back-front-flip"
 
     if motion_type == "stand":
         tf = 10.0
@@ -58,6 +58,8 @@ def generate_reference():
         tf = 5.0
     elif motion_type == "180-frontflip":
         tf = 5.0
+    elif motion_type == "180-back-front-flip":
+        tf = 10.0
     if motion_type == "backflip":
         tf = 5.0
     elif motion_type == "back-cartwheel":
@@ -277,6 +279,28 @@ def generate_reference():
             motion_options["elbow_up_front"] = True
             motion_options["elbow_up_hind"] = True
             motion_options["symmetry"] = "sideways"
+        elif motion_type == "180-back-front-flip":
+            body_height = 0.2
+            angle = cubic_interp_t([0, 2.0, 3.2, 7.0, 8.2, tf], [0, 0, np.pi, np.pi, 0.0, 0.0], t_vals[k])
+            p = np.array([-l_Bx / 2.0, 0.0, body_height])
+            p_xz = rot_mat_2d_np(angle) @ np.array([l_Bx / 2.0, 0.0])
+            p += np.array([p_xz[0], 0.0, p_xz[1]])
+            R = rot_mat_np(np.array([0.0, 1.0, 0.0]), -angle)
+            p_i = {}
+            T_B = homog_np(p, R)
+            for leg in legs:
+                if leg == legs.FL or leg == legs.FR:
+                    p_Bi = mult_homog_point_np(T_B, B_p_Bi[leg])
+                    p_i[leg] = p_Bi.copy()
+                    # p_i[leg][2] -= body_height
+                    p_i[leg][0:3:2] += rot_mat_2d_np(2.0 * angle) @ np.array(
+                        [0.0, -body_height]
+                    )
+                else:
+                    p_i[leg] = B_p_Bi[leg].copy()
+            motion_options["elbow_up_front"] = True
+            motion_options["elbow_up_hind"] = True
+            motion_options["symmetry"] = "sideways"
         if motion_type == "backflip":
             t_apex = 0.2
             z_apex = np.linalg.norm(g) * t_apex**2 / 2.0
@@ -458,8 +482,8 @@ def generate_reference():
         for leg in legs:
             f_i[leg] = np.array([0.0, 0.0, 0.0])
             if p_i[leg][2] <= eps:
-                # f_i[leg][2] = m * np.linalg.norm(g) / 4.0
-                f_i[leg][2] = m * np.linalg.norm(g) # for biped-step
+                f_i[leg][2] = m * np.linalg.norm(g) / 4.0
+                # f_i[leg][2] = m * np.linalg.norm(g) # for biped-step
         X[:, k], U[:, k] = flatten_state_np(p, R, pdot, omega, p_i, f_i)
 
     return X, U, dt, motion_options
