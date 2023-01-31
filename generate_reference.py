@@ -280,7 +280,7 @@ def generate_reference():
             motion_options["elbow_up_hind"] = True
             motion_options["symmetry"] = "sideways"
         elif motion_type == "180-back-front-flip":
-            body_height = 0.2
+            body_height = 0.27
             angle = cubic_interp_t([0, 2.0, 3.2, 7.0, 8.2, tf], [0, 0, np.pi, np.pi, 0.0, 0.0], t_vals[k])
             p = np.array([-l_Bx / 2.0, 0.0, body_height])
             p_xz = rot_mat_2d_np(angle) @ np.array([l_Bx / 2.0, 0.0])
